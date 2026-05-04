@@ -6,9 +6,30 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>[DEV] THT Dual Scan — S&P 500</title>
+<title>[DEV2] THT Dual Scan — S&P 500</title>
 <link rel="stylesheet" href="style.css">
 <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+
+<!-- ─────────── ANALYTICS (test integration) ───────────
+     Both providers below are privacy-friendly, cookieless, GDPR-safe.
+     Until you sign up and replace the placeholders, no data is collected.
+     Sign-up steps below each block. -->
+
+<!-- Plausible Analytics ($9/mo, polished dashboard, goal tracking)
+     1. Sign up at https://plausible.io/register
+     2. Add site → enter "piraci26.github.io/tht-dashboard-dev2"
+     3. Replace data-domain below with the exact domain Plausible assigns
+     4. Hard reload — visits start showing in your dashboard within seconds -->
+<script defer data-domain="piraci26.github.io/tht-dashboard-dev2"
+        src="https://plausible.io/js/script.js"></script>
+
+<!-- GoatCounter (free for personal use, lightweight, cookieless)
+     1. Sign up at https://www.goatcounter.com/signup
+     2. Pick a code (subdomain) — e.g. "tht-dual-scan"
+     3. Replace YOUR_CODE below with that code
+     4. Hard reload — visits show up at https://YOUR_CODE.goatcounter.com -->
+<script data-goatcounter="https://YOUR_CODE.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
 <header>
@@ -24,7 +45,7 @@
     </span>
     <h1>
       <span class="brand-mark">THT</span><span class="brand-sep">/</span><span class="brand-sub">Dual&nbsp;Scan</span>
-      <span class="dev-badge">DEV</span>
+      <span class="dev-badge" style="background:#9333ea;">DEV2</span>
     </h1>
   </div>
   <div class="meta">
@@ -63,6 +84,10 @@
   </div>
 </div>
 </header>
+
+<div class="dev2-banner">
+  <strong>DEV2</strong> · Analytics test sandbox. Both Plausible and GoatCounter scripts loaded — replace placeholders in <code>&lt;head&gt;</code> with your account codes to receive data.
+</div>
 
 <main>
 <section class="changes">
