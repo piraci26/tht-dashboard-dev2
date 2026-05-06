@@ -8,6 +8,17 @@
 <meta http-equiv="Expires" content="0">
 <title>[DEV2] THT Dual Scan — S&P 500</title>
 <link rel="stylesheet" href="style.css">
+<script>
+  // Theme — apply BEFORE first paint. Default to system pref, override w/ localStorage.
+  (function() {
+    try {
+      var stored = localStorage.getItem('theme');
+      var sysPrefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+      var t = stored || (sysPrefersLight ? 'light' : 'dark');
+      if (t === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    } catch(e) {}
+  })();
+</script>
 <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 
 <!-- ─────────── ANALYTICS (test integration) ───────────
@@ -32,6 +43,22 @@
         async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
+<!-- Bloomberg-style top status strip — live data row -->
+<div class="term-statusbar" role="status" aria-live="polite">
+  <span class="ts-cell live"><span class="ts-pulse" aria-hidden="true"></span><span class="ts-k">LIVE</span><span class="ts-v" id="ts-live">SCANNING</span></span>
+  <span class="ts-cell"><span class="ts-k">UPD</span><span class="ts-v" id="ts-upd">—</span></span>
+  <span class="ts-cell"><span class="ts-k">UNIVERSE</span><span class="ts-v" id="ts-universe">—</span></span>
+  <span class="ts-cell"><span class="ts-k">SCAN·MS</span><span class="ts-v" id="ts-scan">—</span></span>
+  <span class="ts-cell bull"><span class="ts-k">FVB·G</span><span class="ts-v" id="ts-fvbg">—</span></span>
+  <span class="ts-cell bear"><span class="ts-k">FVB·R</span><span class="ts-v" id="ts-fvbr">—</span></span>
+  <span class="ts-cell bull"><span class="ts-k">BXT·G</span><span class="ts-v" id="ts-bxtg">—</span></span>
+  <span class="ts-cell bear"><span class="ts-k">BXT·R</span><span class="ts-v" id="ts-bxtr">—</span></span>
+  <span class="ts-cell amber"><span class="ts-k">Δ</span><span class="ts-v" id="ts-changes">—</span></span>
+  <span class="ts-cell"><span class="ts-k">FILTER</span><span class="ts-v" id="ts-filter">≥$3.5B</span></span>
+  <span class="ts-cell"><span class="ts-k">TF</span><span class="ts-v" id="ts-tf">D</span></span>
+  <span class="ts-spacer"></span>
+  <button class="ts-toggle" id="theme-toggle" type="button" aria-label="Toggle theme"><span class="ts-glyph" aria-hidden="true"></span><span id="theme-label">DARK</span></button>
+</div>
 <header>
 <div class="brand-row">
   <div class="brand">
@@ -44,8 +71,8 @@
       </svg>
     </span>
     <h1>
-      <span class="brand-mark">THT</span><span class="brand-sep">/</span><span class="brand-sub">Dual&nbsp;Scan</span>
-      <span class="dev-badge" style="background:#9333ea;">DEV2</span>
+      <span class="brand-mark">THT</span><span class="brand-sep">/</span><span class="brand-sub">DUAL&nbsp;SCAN</span>
+      <span class="dev-badge">DEV2</span>
     </h1>
   </div>
   <div class="meta">
@@ -53,8 +80,7 @@
     <span id="updated">Loading…</span>
     <span class="separator">·</span>
     <span id="stats">—</span>
-    <span class="separator">·</span>
-    <a class="version-toggle" href="https://piraci26.github.io/tht-dashboard/"><span class="arrow">←</span> Current version</a>
+    <a class="version-toggle" href="https://piraci26.github.io/tht-dashboard/"><span class="arrow">←</span> CURRENT</a>
   </div>
 </div>
 <nav class="primary-nav" role="tablist" aria-label="Section">
@@ -131,6 +157,32 @@
 </footer>
 
 <script>
+// ─── Theme toggle (DARK ↔ LIGHT) ──────────────────────────────────
+(function(){
+  const root = document.documentElement;
+  const btn = document.getElementById('theme-toggle');
+  const label = document.getElementById('theme-label');
+  function applyLabel() {
+    const isLight = root.getAttribute('data-theme') === 'light';
+    if (label) label.textContent = isLight ? 'LIGHT' : 'DARK';
+  }
+  applyLabel();
+  if (btn) btn.addEventListener('click', () => {
+    const isLight = root.getAttribute('data-theme') === 'light';
+    if (isLight) root.removeAttribute('data-theme');
+    else root.setAttribute('data-theme', 'light');
+    try { localStorage.setItem('theme', isLight ? 'dark' : 'light'); } catch(e){}
+    applyLabel();
+    // Re-render any open chart with theme-aware colors
+    if (typeof rerenderOpenChart === 'function') rerenderOpenChart();
+  });
+})();
+
+// Helper — read current CSS var from :root (for chart colors)
+function cssVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
 const fmtMcap = b => !b ? '—' : b >= 1000 ? `$${(b/1000).toFixed(2)}T` : `$${b}B`;
 const fmtPct  = p => p == null ? '—' : `+${p.toFixed(1)}%`;
 const fmtUpd  = iso => {
@@ -328,18 +380,22 @@ function wma(arr, len) {
 // ─────────────────────────────────────────────────────────────────
 // Chart rendering
 // ─────────────────────────────────────────────────────────────────
-const TV_COLORS = {
-  bg:        '#131722',
-  text:      '#d1d4dc',
-  grid:      '#1e222d',
-  border:    '#2A2E39',
-  bull:      '#26a69a',
-  bear:      '#ef5350',
-  basis:     '#2962FF',
-  band:      '#787B86',
-  bxt_pos:   '#26a69a',
-  bxt_neg:   '#ef5350',
-};
+function getTVColors() {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  return {
+    bg:        cssVar('--chart-bg')      || (isLight ? '#ffffff' : '#0a0e15'),
+    text:      cssVar('--fg')            || (isLight ? '#1a1d22' : '#d8dde6'),
+    grid:      cssVar('--chart-grid')    || (isLight ? '#f0ede4' : '#161b25'),
+    border:    cssVar('--chart-border')  || (isLight ? '#d6d2c4' : '#20262f'),
+    bull:      cssVar('--bull')          || (isLight ? '#16803a' : '#22c55e'),
+    bear:      cssVar('--bear')          || (isLight ? '#c41e2a' : '#ef4444'),
+    basis:     isLight ? '#1d4ed8' : '#60a5fa',
+    band:      cssVar('--dim')           || (isLight ? '#6b6f78' : '#6b7280'),
+    bxt_pos:   cssVar('--bull')          || (isLight ? '#16803a' : '#22c55e'),
+    bxt_neg:   cssVar('--bear')          || (isLight ? '#c41e2a' : '#ef4444'),
+  };
+}
+let TV_COLORS = getTVColors();
 
 let openChartSym = null;
 
@@ -352,6 +408,7 @@ async function fetchBars(sym) {
 }
 
 function renderChart(container, bars, sym) {
+  TV_COLORS = getTVColors(); // refresh on every render so theme switch works
   container.innerHTML = '';
   const closes = bars.map(b => b.close);
   const { basis, upper, lower } = computeFVB(closes);
@@ -395,8 +452,9 @@ function renderChart(container, bars, sym) {
   // FVB cloud — group consecutive same-regime bars into segments, render each as one pair
   // of area series (upper = regime fill, lower = bg mask). NO bridge → tiny 1-px gap at flips,
   // which is way better than the mud-color overlap from bridging.
-  const greenFill = 'rgba(0,135,90,0.40)';   // saturated TV green
-  const redFill   = 'rgba(120,40,40,0.45)';  // dark TV red
+  const _isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  const greenFill = _isLight ? 'rgba(22,128,58,0.18)'  : 'rgba(34,197,94,0.22)';
+  const redFill   = _isLight ? 'rgba(196,30,42,0.18)'  : 'rgba(239,68,68,0.22)';
 
   const segments = [];
   let curr = null;
@@ -411,8 +469,8 @@ function renderChart(container, bars, sym) {
     curr.lower.push({ time: bars[i].time, value: lower[i] });
   }
 
-  const greenEdge = '#26a69a';
-  const redEdge   = '#ef5350';
+  const greenEdge = TV_COLORS.bull;
+  const redEdge   = TV_COLORS.bear;
 
   for (const seg of segments) {
     const fill = seg.type === 'bull' ? greenFill : redFill;
@@ -441,10 +499,10 @@ function renderChart(container, bars, sym) {
     lowerEdgeLine.setData(seg.lower);
   }
 
-  // Basis line (drawn on top of the cloud) — TV blue
+  // Basis line (drawn on top of the cloud) — institutional blue
   const basisLine = priceChart.addLineSeries({
-    color: '#2962FF', lineWidth: 2,
-    priceLineVisible: true, priceLineColor: '#2962FF', priceLineStyle: 2,
+    color: TV_COLORS.basis, lineWidth: 2,
+    priceLineVisible: true, priceLineColor: TV_COLORS.basis, priceLineStyle: 2,
     lastValueVisible: true, crosshairMarkerVisible: false,
   });
   basisLine.setData(bars.map((b, i) => basis[i] != null ? { time: b.time, value: basis[i] } : null).filter(Boolean));
@@ -464,9 +522,9 @@ function renderChart(container, bars, sym) {
     const bullToday = bars[i].close > basis[i];
     const bullYest  = bars[i-1].close > basis[i-1];
     if (bullToday && !bullYest) {
-      markers.push({ time: bars[i].time, position: 'inBar', color: '#26a69a', shape: 'circle', size: 1.2 });
+      markers.push({ time: bars[i].time, position: 'inBar', color: TV_COLORS.bull, shape: 'circle', size: 1.2 });
     } else if (!bullToday && bullYest) {
-      markers.push({ time: bars[i].time, position: 'inBar', color: '#ef5350', shape: 'circle', size: 1.2 });
+      markers.push({ time: bars[i].time, position: 'inBar', color: TV_COLORS.bear, shape: 'circle', size: 1.2 });
     }
   }
   basisLine.setMarkers(markers);
@@ -478,9 +536,11 @@ function renderChart(container, bars, sym) {
     color: 'rgba(120,123,134,0.5)',
   });
   volSeries.priceScale().applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
+  const _volBull = _isLight ? 'rgba(22,128,58,0.35)'  : 'rgba(34,197,94,0.40)';
+  const _volBear = _isLight ? 'rgba(196,30,42,0.35)'  : 'rgba(239,68,68,0.40)';
   volSeries.setData(bars.map(b => ({
     time: b.time, value: b.volume || 0,
-    color: b.close >= b.open ? 'rgba(38,166,154,0.4)' : 'rgba(239,83,80,0.4)',
+    color: b.close >= b.open ? _volBull : _volBear,
   })));
 
   // ─── BXT pane ─────────────────────────────────────────────────────
@@ -500,19 +560,19 @@ function renderChart(container, bars, sym) {
   });
   shortHist.setData(bars.map((b, i) => bxtShort[i] != null ? {
     time: b.time, value: bxtShort[i],
-    color: bxtShort[i] >= 0 ? '#00C853' : '#B71C1C',
+    color: bxtShort[i] >= 0 ? TV_COLORS.bull : TV_COLORS.bear,
   } : null).filter(Boolean));
 
-  // Smoothed short-term BXT line (bright green)
+  // Smoothed short-term BXT line (bull-tinted)
   const shortLine = bxtChart.addLineSeries({
-    color: '#00E676', lineWidth: 2,
+    color: TV_COLORS.bull, lineWidth: 2,
     priceLineVisible: false, lastValueVisible: true,
   });
   shortLine.setData(bars.map((b, i) => bxtShortSmooth[i] != null ? { time: b.time, value: bxtShortSmooth[i] } : null).filter(Boolean));
 
-  // Long-term BXT smoothed (bright red)
+  // Long-term BXT smoothed (bear-tinted)
   const longLine = bxtChart.addLineSeries({
-    color: '#FF5252', lineWidth: 2,
+    color: TV_COLORS.bear, lineWidth: 2,
     priceLineVisible: false, lastValueVisible: true,
   });
   longLine.setData(bars.map((b, i) => bxtLongSmooth[i] != null ? { time: b.time, value: bxtLongSmooth[i] } : null).filter(Boolean));
@@ -659,6 +719,25 @@ function setIfNotOpen(wrapId, html) {
   document.getElementById(wrapId).innerHTML = html;
 }
 
+function setSectionCount(tableId, n) {
+  const wrap = document.getElementById(tableId);
+  if (!wrap) return;
+  const sec = wrap.closest('section');
+  if (!sec) return;
+  const h = sec.querySelector('h2');
+  if (h) h.setAttribute('data-count', n + (n === 1 ? ' ROW' : ' ROWS'));
+}
+
+function fmtTsUpd(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/London',
+    hour: '2-digit', minute: '2-digit', hour12: false,
+  }).formatToParts(d).reduce((o,p)=>(o[p.type]=p.value,o),{});
+  return `${parts.hour}:${parts.minute} LDN`;
+}
+
 function renderAll() {
   if (!currentData) return;
   const d = currentData;
@@ -668,8 +747,10 @@ function renderAll() {
     `${d.scanned_count} scanned in ${d.scan_seconds}s · THT Fair Value Bands ${fg.length}g/${fr.length}r · B-Xtrender ${bg.length}g/${br.length}r`;
   // Filter changes by mcap too
   const filteredChanges = { compared_to: d.changes.compared_to };
+  let changeTotal = 0;
   for (const k of ['fvb_green_added','fvb_green_removed','fvb_red_added','fvb_red_removed','bxt_green_added','bxt_green_removed','bxt_red_added','bxt_red_removed']) {
     filteredChanges[k] = filterRows(d.changes[k]);
+    changeTotal += filteredChanges[k].length;
   }
   setIfNotOpen('changes-table',  renderChanges(filteredChanges));
   setIfNotOpen('fvb-green-table', renderTable(fg, 'fvb-green-table'));
@@ -677,6 +758,38 @@ function renderAll() {
   setIfNotOpen('bxt-green-table', renderTable(bg, 'bxt-green-table'));
   setIfNotOpen('bxt-red-table',   renderTable(br, 'bxt-red-table'));
   document.getElementById('updated').textContent = fmtUpd(d.updated_at);
+
+  // Section count chips (right-aligned in each h2)
+  setSectionCount('changes-table',  changeTotal);
+  setSectionCount('fvb-green-table', fg.length);
+  setSectionCount('fvb-red-table',   fr.length);
+  setSectionCount('bxt-green-table', bg.length);
+  setSectionCount('bxt-red-table',   br.length);
+
+  // Bloomberg-style top status strip
+  const setText = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  setText('ts-live',     'OK');
+  setText('ts-upd',      fmtTsUpd(d.updated_at));
+  setText('ts-universe', String(d.scanned_count));
+  setText('ts-scan',     `${Math.round((d.scan_seconds||0)*1000)}`);
+  setText('ts-fvbg',     String(fg.length));
+  setText('ts-fvbr',     String(fr.length));
+  setText('ts-bxtg',     String(bg.length));
+  setText('ts-bxtr',     String(br.length));
+  setText('ts-changes',  String(changeTotal));
+  setText('ts-filter',   `≥$${minMcap}B`);
+  setText('ts-tf',       timeframe === 'daily' ? 'D' : timeframe === 'weekly' ? 'W' : 'M');
+}
+
+function rerenderOpenChart() {
+  // Re-render the currently open chart so theme switch applies
+  if (!openChartSym) return;
+  const tr = document.querySelector(`tr.chart-row[data-sym="${openChartSym}"]`);
+  if (!tr) return;
+  const sym = openChartSym;
+  const trAbove = tr.previousElementSibling;
+  tr.remove();
+  if (trAbove) toggleChart(trAbove, sym);
 }
 
 // Filter input (free-form number)
