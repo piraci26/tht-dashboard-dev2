@@ -57,7 +57,11 @@
     <a class="version-toggle" href="https://piraci26.github.io/tht-dashboard/"><span class="arrow">←</span> Current version</a>
   </div>
 </div>
-<p class="subtitle">Daily &amp; weekly flips on <strong>THT Fair Value Bands</strong> and <strong>B-Xtrender</strong> across 1,500+ US equities. Click any row to expand the chart.</p>
+<nav class="primary-nav" role="tablist" aria-label="Section">
+  <button class="primary-nav-btn active" data-view="scanner">Scanner</button>
+  <button class="primary-nav-btn" data-view="articles">Articles <span class="nav-count" id="articles-count">·</span></button>
+</nav>
+<p class="subtitle">Daily, weekly &amp; monthly flips on <strong>THT Fair Value Bands</strong> and <strong>B-Xtrender</strong> across 1,500+ US equities. Click any row to expand the chart.</p>
 <div class="controls">
   <div class="control-block">
     <span class="control-label">Timeframe</span>
@@ -86,6 +90,7 @@
 </header>
 
 <main>
+<div id="scanner-view">
 <section class="changes">
 <h2><span class="dot dot-changes"></span>Changes since last 5-min refresh</h2>
 <div id="changes-table" class="table-wrap"></div>
@@ -110,6 +115,15 @@
 <h2><span class="dot dot-red"></span>B-Xtrender flipped RED today</h2>
 <div id="bxt-red-table" class="table-wrap"></div>
 </section>
+</div>
+
+<div id="articles-view" hidden>
+  <section class="articles">
+    <h2 class="articles-h2">Inferences <span class="articles-h2-sub">— what today's tape might be saying</span></h2>
+    <p class="articles-disclaimer">Educational observations only — <strong>not investment advice</strong>. The author/operator is not a registered investment adviser. Patterns described here may or may not predict future market behaviour.</p>
+    <div id="articles-list"></div>
+  </section>
+</div>
 </main>
 
 <footer>
@@ -715,6 +729,83 @@ document.querySelectorAll('.tab-btn').forEach(b => {
   });
 });
 syncTabs();
+
+// ─── Primary nav (Scanner / Articles) ─────────────────────────────
+let activeView = localStorage.getItem('activeView') || 'scanner';
+let articlesLoaded = false;
+
+function syncPrimaryNav() {
+  document.querySelectorAll('.primary-nav-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.view === activeView);
+  });
+  document.getElementById('scanner-view').hidden  = (activeView !== 'scanner');
+  document.getElementById('articles-view').hidden = (activeView !== 'articles');
+  if (activeView === 'articles' && !articlesLoaded) loadArticles();
+}
+document.querySelectorAll('.primary-nav-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    if (b.dataset.view === activeView) return;
+    activeView = b.dataset.view;
+    localStorage.setItem('activeView', activeView);
+    syncPrimaryNav();
+  });
+});
+
+// Tiny inline markdown renderer (paragraphs, **bold**, *italic*, ## H2, --- hr, lists)
+function renderMD(md) {
+  const lines = md.split('\n');
+  let html = '', inList = false;
+  for (let raw of lines) {
+    const line = raw.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                     .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+                     .replace(/`([^`]+)`/g, '<code>$1</code>');
+    if (/^---/.test(line.trim())) { if (inList) { html += '</ul>'; inList = false; } html += '<hr>'; continue; }
+    if (/^## /.test(line))         { if (inList) { html += '</ul>'; inList = false; } html += `<h3>${line.slice(3)}</h3>`; continue; }
+    if (/^- /.test(line))          { if (!inList) { html += '<ul>'; inList = true; } html += `<li>${line.slice(2)}</li>`; continue; }
+    if (line.trim() === '')        { if (inList) { html += '</ul>'; inList = false; } continue; }
+    if (inList) { html += '</ul>'; inList = false; }
+    html += `<p>${line}</p>`;
+  }
+  if (inList) html += '</ul>';
+  return html;
+}
+
+async function loadArticles() {
+  try {
+    const res = await fetch('articles.json?t=' + Date.now());
+    const data = await res.json();
+    const articles = (data.articles || []).slice().sort((a, b) => b.date.localeCompare(a.date));
+    document.getElementById('articles-count').textContent = articles.length;
+    const container = document.getElementById('articles-list');
+    container.innerHTML = articles.map(a => `
+      <article class="article-card" data-id="${a.id}">
+        <div class="article-meta">
+          <span class="article-date">${a.date}</span>
+          ${(a.tags || []).map(t => `<span class="article-tag">${t}</span>`).join('')}
+        </div>
+        <h3 class="article-title">${a.title}</h3>
+        <p class="article-summary">${a.summary || ''}</p>
+        <div class="article-body" hidden>${renderMD(a.body)}</div>
+        <button class="article-toggle" type="button">Read →</button>
+      </article>
+    `).join('');
+    container.querySelectorAll('.article-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const card = btn.closest('.article-card');
+        const body = card.querySelector('.article-body');
+        const open = !body.hidden;
+        body.hidden = open;
+        btn.textContent = open ? 'Read →' : 'Close ↑';
+        card.classList.toggle('expanded', !open);
+      });
+    });
+    articlesLoaded = true;
+  } catch (e) {
+    document.getElementById('articles-list').innerHTML = '<p class="empty">Couldn\'t load articles. Check articles.json exists.</p>';
+  }
+}
+
+syncPrimaryNav();
 
 async function load() {
   try {
