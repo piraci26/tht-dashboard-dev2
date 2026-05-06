@@ -1,133 +1,268 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>[DEV2] THT Dual Scan — S&P 500</title>
+<title>THT Dual Scan — Live market regime flips</title>
+<meta name="description" content="Daily, weekly and monthly regime flips on THT Fair Value Bands and B-Xtrender across 1,500+ US equities.">
+<meta name="theme-color" content="#08090d">
+
+<!-- Distinctive type: Bricolage Grotesque (display) + JetBrains Mono (numerics) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <link rel="stylesheet" href="style.css">
 <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 
-<!-- ─────────── ANALYTICS (test integration) ───────────
-     Both providers below are privacy-friendly, cookieless, GDPR-safe.
-     Until you sign up and replace the placeholders, no data is collected.
-     Sign-up steps below each block. -->
+<!-- Set theme before paint to avoid flash -->
+<script>
+  (function () {
+    try {
+      var t = localStorage.getItem('theme');
+      if (!t) t = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+    } catch (e) {}
+  })();
+</script>
 
-<!-- Plausible Analytics ($9/mo, polished dashboard, goal tracking)
-     1. Sign up at https://plausible.io/register
-     2. Add site → enter "piraci26.github.io/tht-dashboard-dev2"
-     3. Replace data-domain below with the exact domain Plausible assigns
-     4. Hard reload — visits start showing in your dashboard within seconds -->
+<!-- Plausible Analytics -->
 <script defer data-domain="piraci26.github.io/tht-dashboard-dev2"
         src="https://plausible.io/js/script.js"></script>
 
-<!-- GoatCounter (free for personal use, lightweight, cookieless)
-     1. Sign up at https://www.goatcounter.com/signup
-     2. Pick a code (subdomain) — e.g. "tht-dual-scan"
-     3. Replace YOUR_CODE below with that code
-     4. Hard reload — visits show up at https://YOUR_CODE.goatcounter.com -->
+<!-- GoatCounter -->
 <script data-goatcounter="https://jakubkaszynski.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
-<header>
-<div class="brand-row">
-  <div class="brand">
-    <span class="brand-glyph" aria-hidden="true">
-      <svg viewBox="0 0 24 24" width="22" height="22" xmlns="http://www.w3.org/2000/svg">
-        <rect x="1.5" y="1.5" width="21" height="21" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
-        <path d="M2 22 L22 2" stroke="currentColor" stroke-width="1.5"/>
-        <circle cx="7" cy="17" r="2.2" fill="currentColor"/>
-        <circle cx="17" cy="7" r="2.2" fill="currentColor" opacity="0.55"/>
-      </svg>
-    </span>
-    <h1>
-      <span class="brand-mark">THT</span><span class="brand-sep">/</span><span class="brand-sub">Dual&nbsp;Scan</span>
-      <span class="dev-badge" style="background:#9333ea;">DEV2</span>
-    </h1>
-  </div>
-  <div class="meta">
-    <span class="pulse" aria-hidden="true"></span>
-    <span id="updated">Loading…</span>
-    <span class="separator">·</span>
-    <span id="stats">—</span>
-    <span class="separator">·</span>
-    <a class="version-toggle" href="https://piraci26.github.io/tht-dashboard/"><span class="arrow">←</span> Current version</a>
-  </div>
+
+<!-- Atmospheric backdrop: drifting glow blobs + subtle film grain -->
+<div class="atmosphere" aria-hidden="true">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+  <div class="grain"></div>
 </div>
-<nav class="primary-nav" role="tablist" aria-label="Section">
-  <button class="primary-nav-btn active" data-view="scanner">Scanner</button>
-  <button class="primary-nav-btn" data-view="articles">Articles <span class="nav-count" id="articles-count">·</span></button>
-</nav>
-<p class="subtitle">Daily, weekly &amp; monthly flips on <strong>THT Fair Value Bands</strong> and <strong>B-Xtrender</strong> across 1,500+ US equities. Click any row to expand the chart.</p>
-<div class="controls">
-  <div class="control-block">
-    <span class="control-label">Timeframe</span>
-    <div class="tab-row" role="tablist" aria-label="Timeframe">
-      <button class="tab-btn active" data-tf="daily" role="tab">Daily</button>
-      <button class="tab-btn" data-tf="weekly" role="tab">Weekly</button>
-      <button class="tab-btn" data-tf="monthly" role="tab">Monthly</button>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="brand">
+      <span class="brand-glyph" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" xmlns="http://www.w3.org/2000/svg">
+          <rect x="1.5" y="1.5" width="21" height="21" rx="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M2 22 L22 2" stroke="currentColor" stroke-width="1.5"/>
+          <circle cx="7" cy="17" r="2.4" fill="currentColor"/>
+          <circle cx="17" cy="7" r="2.4" fill="currentColor" opacity="0.55"/>
+        </svg>
+      </span>
+      <span class="brand-wordmark">
+        <span class="brand-mark">THT</span><span class="brand-sep">/</span><span class="brand-sub">Dual&nbsp;Scan</span>
+      </span>
+      <span class="dev-badge">DEV2</span>
+    </div>
+
+    <div class="header-meta">
+      <span class="live-pill">
+        <span class="live-dot" aria-hidden="true"></span>
+        <span class="live-label">LIVE</span>
+        <span id="updated">Loading…</span>
+      </span>
+      <a class="ghost-link" href="https://piraci26.github.io/tht-dashboard/">
+        <span class="arrow">←</span> Stable
+      </a>
+      <button class="theme-toggle" type="button" aria-label="Toggle theme" id="theme-toggle">
+        <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
     </div>
   </div>
-  <div class="control-block filter-row">
-    <label class="control-label" for="mcap-filter">Min Mkt Cap</label>
-    <div class="filter-input-group">
-      <span class="filter-prefix">$</span>
-      <input id="mcap-filter" type="number" step="0.1" min="0" placeholder="3.5">
-      <span class="filter-suffix">B+</span>
-    </div>
-    <div class="filter-presets" role="group" aria-label="Market-cap presets">
-      <button type="button" data-mcap="3.5">3.5B</button>
-      <button type="button" data-mcap="10">10B</button>
-      <button type="button" data-mcap="50">50B</button>
-      <button type="button" data-mcap="200">200B</button>
-      <button type="button" data-mcap="1000">1T</button>
-    </div>
-  </div>
-</div>
 </header>
 
-<main>
-<div id="scanner-view">
-<section class="changes">
-<h2><span class="dot dot-changes"></span>Changes since last 5-min refresh</h2>
-<div id="changes-table" class="table-wrap"></div>
+<section class="hero">
+  <div class="hero-glow" aria-hidden="true"></div>
+  <div class="hero-inner">
+    <div class="eyebrow">
+      <span class="eyebrow-dot"></span>
+      <span>S&amp;P 500 · 1,500+ tickers · 30s refresh</span>
+    </div>
+    <h1 class="hero-title">
+      Live market regime flips,<br>
+      <span class="hero-accent">in plain sight.</span>
+    </h1>
+    <p class="hero-sub">
+      Daily, weekly and monthly turns on <strong>THT Fair Value Bands</strong> and <strong>B-Xtrender</strong>.
+      Click any row, see the chart, watch the regime change.
+    </p>
+
+    <div class="stat-strip" id="hero-stats">
+      <div class="stat" data-tone="bull">
+        <span class="stat-label">FVB · Green</span>
+        <span class="stat-value" id="stat-fvb-g">0</span>
+      </div>
+      <div class="stat" data-tone="bear">
+        <span class="stat-label">FVB · Red</span>
+        <span class="stat-value" id="stat-fvb-r">0</span>
+      </div>
+      <div class="stat" data-tone="bull">
+        <span class="stat-label">BXT · Green</span>
+        <span class="stat-value" id="stat-bxt-g">0</span>
+      </div>
+      <div class="stat" data-tone="bear">
+        <span class="stat-label">BXT · Red</span>
+        <span class="stat-value" id="stat-bxt-r">0</span>
+      </div>
+      <div class="stat stat-meta">
+        <span class="stat-label">Scanned</span>
+        <span class="stat-value" id="stat-scanned">—</span>
+      </div>
+    </div>
+
+    <nav class="primary-nav" role="tablist" aria-label="Section">
+      <span class="nav-indicator" aria-hidden="true"></span>
+      <button class="primary-nav-btn active" data-view="scanner" role="tab">Scanner</button>
+      <button class="primary-nav-btn" data-view="articles" role="tab">
+        Articles <span class="nav-count" id="articles-count">·</span>
+      </button>
+    </nav>
+  </div>
 </section>
 
-<section class="green">
-<h2><span class="dot dot-green"></span>THT Fair Value Bands flipped GREEN today</h2>
-<div id="fvb-green-table" class="table-wrap"></div>
-</section>
+<main class="container">
 
-<section class="red">
-<h2><span class="dot dot-red"></span>THT Fair Value Bands flipped RED today</h2>
-<div id="fvb-red-table" class="table-wrap"></div>
-</section>
+  <!-- Controls bar (timeframe + market-cap filter) -->
+  <div class="controls-bar" id="controls-bar">
+    <div class="control-block">
+      <span class="control-label">Timeframe</span>
+      <div class="tab-row" role="tablist" aria-label="Timeframe">
+        <span class="tab-indicator" aria-hidden="true"></span>
+        <button class="tab-btn active" data-tf="daily" role="tab">Daily</button>
+        <button class="tab-btn" data-tf="weekly" role="tab">Weekly</button>
+        <button class="tab-btn" data-tf="monthly" role="tab">Monthly</button>
+      </div>
+    </div>
+    <div class="control-block filter-row">
+      <label class="control-label" for="mcap-filter">Min Mkt Cap</label>
+      <div class="filter-input-group">
+        <span class="filter-prefix">$</span>
+        <input id="mcap-filter" type="number" step="0.1" min="0" placeholder="3.5" inputmode="decimal">
+        <span class="filter-suffix">B+</span>
+      </div>
+      <div class="filter-presets" role="group" aria-label="Market-cap presets">
+        <button type="button" data-mcap="3.5">3.5B</button>
+        <button type="button" data-mcap="10">10B</button>
+        <button type="button" data-mcap="50">50B</button>
+        <button type="button" data-mcap="200">200B</button>
+        <button type="button" data-mcap="1000">1T</button>
+      </div>
+    </div>
+    <div class="controls-stats">
+      <span class="separator-pipe">·</span>
+      <span id="stats">—</span>
+    </div>
+  </div>
 
-<section class="green">
-<h2><span class="dot dot-green"></span>B-Xtrender flipped GREEN today</h2>
-<div id="bxt-green-table" class="table-wrap"></div>
-</section>
+  <div id="scanner-view">
+    <section class="card section section-changes" data-stagger="0">
+      <div class="section-head">
+        <span class="section-glyph">
+          <span class="dot dot-changes"></span>
+        </span>
+        <div class="section-headtext">
+          <h2>Changes</h2>
+          <p class="section-sub">Names added or dropped since the previous 5-minute scan</p>
+        </div>
+      </div>
+      <div id="changes-table" class="table-wrap"></div>
+    </section>
 
-<section class="red">
-<h2><span class="dot dot-red"></span>B-Xtrender flipped RED today</h2>
-<div id="bxt-red-table" class="table-wrap"></div>
-</section>
-</div>
+    <section class="card section section-green" data-stagger="1">
+      <div class="section-head">
+        <span class="section-glyph">
+          <span class="dot dot-green"></span>
+        </span>
+        <div class="section-headtext">
+          <h2>FVB flipped <span class="ink-bull">GREEN</span> today</h2>
+          <p class="section-sub">Close pushed above the 20-period mean — bull regime begins</p>
+        </div>
+      </div>
+      <div id="fvb-green-table" class="table-wrap"></div>
+    </section>
 
-<div id="articles-view" hidden>
-  <section class="articles">
-    <h2 class="articles-h2">Inferences <span class="articles-h2-sub">— what today's tape might be saying</span></h2>
-    <p class="articles-disclaimer">Educational observations only — <strong>not investment advice</strong>. The author/operator is not a registered investment adviser. Patterns described here may or may not predict future market behaviour.</p>
-    <div id="articles-list"></div>
-  </section>
-</div>
+    <section class="card section section-red" data-stagger="2">
+      <div class="section-head">
+        <span class="section-glyph">
+          <span class="dot dot-red"></span>
+        </span>
+        <div class="section-headtext">
+          <h2>FVB flipped <span class="ink-bear">RED</span> today</h2>
+          <p class="section-sub">Close broke below the basis — bear regime takes over</p>
+        </div>
+      </div>
+      <div id="fvb-red-table" class="table-wrap"></div>
+    </section>
+
+    <section class="card section section-green" data-stagger="3">
+      <div class="section-head">
+        <span class="section-glyph">
+          <span class="dot dot-green"></span>
+        </span>
+        <div class="section-headtext">
+          <h2>B-Xtrender flipped <span class="ink-bull">GREEN</span> today</h2>
+          <p class="section-sub">Short-term momentum just turned positive</p>
+        </div>
+      </div>
+      <div id="bxt-green-table" class="table-wrap"></div>
+    </section>
+
+    <section class="card section section-red" data-stagger="4">
+      <div class="section-head">
+        <span class="section-glyph">
+          <span class="dot dot-red"></span>
+        </span>
+        <div class="section-headtext">
+          <h2>B-Xtrender flipped <span class="ink-bear">RED</span> today</h2>
+          <p class="section-sub">Short-term momentum just rolled over</p>
+        </div>
+      </div>
+      <div id="bxt-red-table" class="table-wrap"></div>
+    </section>
+  </div>
+
+  <div id="articles-view" hidden>
+    <section class="card section articles">
+      <div class="section-head">
+        <span class="section-glyph">
+          <span class="dot dot-accent"></span>
+        </span>
+        <div class="section-headtext">
+          <h2>Inferences <span class="articles-h2-sub">— what today's tape might be saying</span></h2>
+          <p class="articles-disclaimer">
+            Educational observations only — <strong>not investment advice</strong>.
+            The author/operator is not a registered investment adviser.
+            Patterns described here may or may not predict future market behaviour.
+          </p>
+        </div>
+      </div>
+      <div id="articles-list"></div>
+    </section>
+  </div>
 </main>
 
-<footer>
-<p>Auto-refreshes every 30 seconds. Yahoo Finance daily OHLCV. Indicator math from open-source Pine.</p>
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <span class="brand-mark">THT</span><span class="brand-sep">/</span><span class="brand-sub">Dual&nbsp;Scan</span>
+    </div>
+    <p>Auto-refreshes every 30 seconds. Yahoo Finance daily OHLCV. Indicator math from open-source Pine.</p>
+  </div>
 </footer>
 
 <script>
@@ -326,7 +461,7 @@ function wma(arr, len) {
 }
 
 // ─────────────────────────────────────────────────────────────────
-// Chart rendering
+// Chart rendering — charts STAY DARK in both themes
 // ─────────────────────────────────────────────────────────────────
 const TV_COLORS = {
   bg:        '#131722',
@@ -610,14 +745,14 @@ const barsBaseUrl = () => timeframe === 'daily' ? 'bars' : `bars_${timeframe}`;
 function renderChanges(changes) {
   if (!changes) return '<p class="empty">No prior run to compare to.</p>';
   const buckets = [
-    {label: 'THT Fair Value Bands 🟢 New',     items: changes.fvb_green_added,   action: 'added',   color: 'green'},
-    {label: 'THT Fair Value Bands 🟢 Dropped', items: changes.fvb_green_removed, action: 'removed', color: 'green'},
-    {label: 'THT Fair Value Bands 🔴 New',     items: changes.fvb_red_added,     action: 'added',   color: 'red'},
-    {label: 'THT Fair Value Bands 🔴 Dropped', items: changes.fvb_red_removed,   action: 'removed', color: 'red'},
-    {label: 'B-Xtrender 🟢 New',     items: changes.bxt_green_added,   action: 'added',   color: 'green'},
-    {label: 'B-Xtrender 🟢 Dropped', items: changes.bxt_green_removed, action: 'removed', color: 'green'},
-    {label: 'B-Xtrender 🔴 New',     items: changes.bxt_red_added,     action: 'added',   color: 'red'},
-    {label: 'B-Xtrender 🔴 Dropped', items: changes.bxt_red_removed,   action: 'removed', color: 'red'},
+    {label: 'FVB Green · New',     items: changes.fvb_green_added,   action: 'added',   color: 'green'},
+    {label: 'FVB Green · Dropped', items: changes.fvb_green_removed, action: 'removed', color: 'green'},
+    {label: 'FVB Red · New',       items: changes.fvb_red_added,     action: 'added',   color: 'red'},
+    {label: 'FVB Red · Dropped',   items: changes.fvb_red_removed,   action: 'removed', color: 'red'},
+    {label: 'BXT Green · New',     items: changes.bxt_green_added,   action: 'added',   color: 'green'},
+    {label: 'BXT Green · Dropped', items: changes.bxt_green_removed, action: 'removed', color: 'green'},
+    {label: 'BXT Red · New',       items: changes.bxt_red_added,     action: 'added',   color: 'red'},
+    {label: 'BXT Red · Dropped',   items: changes.bxt_red_removed,   action: 'removed', color: 'red'},
   ];
   const total = buckets.reduce((s,b) => s + (b.items?.length || 0), 0);
   if (total === 0) return '<p class="empty">No changes since last refresh.</p>';
@@ -659,13 +794,41 @@ function setIfNotOpen(wrapId, html) {
   document.getElementById(wrapId).innerHTML = html;
 }
 
+// Counter tween for hero stats — animate from current to target
+function tweenCounter(el, target, duration = 700) {
+  if (!el) return;
+  const start = parseInt(el.textContent, 10) || 0;
+  if (start === target) return;
+  const t0 = performance.now();
+  const ease = t => 1 - Math.pow(1 - t, 3);
+  function step(now) {
+    const t = Math.min(1, (now - t0) / duration);
+    el.textContent = Math.round(start + (target - start) * ease(t));
+    if (t < 1) requestAnimationFrame(step);
+  }
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    el.textContent = target;
+  } else {
+    requestAnimationFrame(step);
+  }
+}
+
 function renderAll() {
   if (!currentData) return;
   const d = currentData;
   const fg = filterRows(d.fvb_green), fr = filterRows(d.fvb_red);
   const bg = filterRows(d.bxt_green), br = filterRows(d.bxt_red);
+
+  // Hero stat strip
+  tweenCounter(document.getElementById('stat-fvb-g'), fg.length);
+  tweenCounter(document.getElementById('stat-fvb-r'), fr.length);
+  tweenCounter(document.getElementById('stat-bxt-g'), bg.length);
+  tweenCounter(document.getElementById('stat-bxt-r'), br.length);
+  const scannedEl = document.getElementById('stat-scanned');
+  if (scannedEl) scannedEl.textContent = (d.scanned_count || 0).toLocaleString();
+
   document.getElementById('stats').textContent =
-    `${d.scanned_count} scanned in ${d.scan_seconds}s · THT Fair Value Bands ${fg.length}g/${fr.length}r · B-Xtrender ${bg.length}g/${br.length}r`;
+    `${d.scanned_count} scanned in ${d.scan_seconds}s · FVB ${fg.length}g/${fr.length}r · BXT ${bg.length}g/${br.length}r`;
   // Filter changes by mcap too
   const filteredChanges = { compared_to: d.changes.compared_to };
   for (const k of ['fvb_green_added','fvb_green_removed','fvb_red_added','fvb_red_removed','bxt_green_added','bxt_green_removed','bxt_red_added','bxt_red_removed']) {
@@ -708,11 +871,22 @@ document.querySelectorAll('.filter-presets button').forEach(b => {
 });
 syncPresets();
 
-// Tabs (Daily / Weekly)
+// Sliding underline indicator (timeframe tabs)
+function moveTabIndicator() {
+  const row = document.querySelector('.tab-row');
+  if (!row) return;
+  const ind = row.querySelector('.tab-indicator');
+  const active = row.querySelector('.tab-btn.active');
+  if (!ind || !active) return;
+  ind.style.width = active.offsetWidth + 'px';
+  ind.style.transform = `translateX(${active.offsetLeft}px)`;
+}
+
 function syncTabs() {
   document.querySelectorAll('.tab-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.tf === timeframe);
   });
+  moveTabIndicator();
 }
 document.querySelectorAll('.tab-btn').forEach(b => {
   b.addEventListener('click', () => {
@@ -720,7 +894,6 @@ document.querySelectorAll('.tab-btn').forEach(b => {
     timeframe = b.dataset.tf;
     localStorage.setItem('timeframe', timeframe);
     syncTabs();
-    // Close any open chart since bars source changes
     document.querySelectorAll('tr.chart-row').forEach(el => el.remove());
     openChartSym = null;
     currentData = null;
@@ -729,10 +902,22 @@ document.querySelectorAll('.tab-btn').forEach(b => {
   });
 });
 syncTabs();
+window.addEventListener('resize', moveTabIndicator);
+window.addEventListener('load', moveTabIndicator);
 
 // ─── Primary nav (Scanner / Articles) ─────────────────────────────
 let activeView = localStorage.getItem('activeView') || 'scanner';
 let articlesLoaded = false;
+
+function moveNavIndicator() {
+  const nav = document.querySelector('.primary-nav');
+  if (!nav) return;
+  const ind = nav.querySelector('.nav-indicator');
+  const active = nav.querySelector('.primary-nav-btn.active');
+  if (!ind || !active) return;
+  ind.style.width = active.offsetWidth + 'px';
+  ind.style.transform = `translateX(${active.offsetLeft}px)`;
+}
 
 function syncPrimaryNav() {
   document.querySelectorAll('.primary-nav-btn').forEach(b => {
@@ -740,6 +925,7 @@ function syncPrimaryNav() {
   });
   document.getElementById('scanner-view').hidden  = (activeView !== 'scanner');
   document.getElementById('articles-view').hidden = (activeView !== 'articles');
+  moveNavIndicator();
   if (activeView === 'articles' && !articlesLoaded) loadArticles();
 }
 document.querySelectorAll('.primary-nav-btn').forEach(b => {
@@ -750,6 +936,8 @@ document.querySelectorAll('.primary-nav-btn').forEach(b => {
     syncPrimaryNav();
   });
 });
+window.addEventListener('resize', moveNavIndicator);
+window.addEventListener('load', moveNavIndicator);
 
 // Tiny inline markdown renderer (paragraphs, **bold**, *italic*, ## H2, --- hr, lists)
 function renderMD(md) {
@@ -806,6 +994,17 @@ async function loadArticles() {
 }
 
 syncPrimaryNav();
+
+// ─── Theme toggle ──────────────────────────────────────────────────
+const themeBtn = document.getElementById('theme-toggle');
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('theme', t);
+}
+themeBtn.addEventListener('click', () => {
+  const cur = document.documentElement.getAttribute('data-theme') || 'dark';
+  applyTheme(cur === 'dark' ? 'light' : 'dark');
+});
 
 async function load() {
   try {
