@@ -1,230 +1,183 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<title>THT/DSCAN — Terminal</title>
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>THT Dual Scan — Linear concept</title>
 <link rel="stylesheet" href="style.css">
+<script>
+  // Set theme as early as possible to avoid FOUC.
+  (function () {
+    try {
+      var stored = localStorage.getItem('theme');
+      var prefers = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      var t = stored || prefers;
+      if (t === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    } catch (e) { /* noop */ }
+  })();
+</script>
 <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
 <body>
-
-<!-- ─────────── TOP BAR (status / brand / theme) ─────────── -->
-<header class="topbar">
-  <div class="topbar-left">
+<header>
+  <div class="topbar">
     <div class="brand">
       <span class="brand-glyph" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="14" height="14"><rect x="2" y="2" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M3 21 L21 3" stroke="currentColor" stroke-width="1.5"/><circle cx="7" cy="17" r="2" fill="currentColor"/><circle cx="17" cy="7" r="2" fill="currentColor" opacity="0.45"/></svg>
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 18 L10 11 L14 15 L20 6"/>
+        </svg>
       </span>
-      <span class="brand-mark">THT</span><span class="brand-slash">/</span><span class="brand-sub">DSCAN</span>
-      <span class="env-tag">DEV·02</span>
+      <h1>
+        <span class="brand-mark">THT</span><span class="brand-sep">/</span><span class="brand-sub">Dual Scan</span>
+        <span class="dev-badge">DEV2</span>
+      </h1>
     </div>
-    <span class="topbar-divider"></span>
-    <span class="status-cell">
-      <span class="pulse" aria-hidden="true"></span>
-      <span class="status-label">LIVE</span>
-      <span class="status-sep">·</span>
-      <span id="market-state" class="status-value">—</span>
-    </span>
-    <span class="topbar-divider"></span>
-    <span class="status-cell mono">
-      <span class="status-label">UPD</span>
-      <span id="updated" class="status-value">···</span>
-    </span>
-    <span class="topbar-divider"></span>
-    <span class="status-cell mono" id="stats">—</span>
+    <div class="topbar-right">
+      <a class="icon-link" href="../" title="Other concepts">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+        </svg>
+        <span>Concepts</span>
+      </a>
+      <a class="icon-link" href="https://piraci26.github.io/tht-dashboard/" title="Open production">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M7 17 L17 7"/><path d="M8 7h9v9"/>
+        </svg>
+        <span>Live</span>
+      </a>
+      <button class="theme-toggle" type="button" aria-label="Toggle theme" id="theme-toggle">
+        <svg class="icon-moon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+      </button>
+    </div>
   </div>
-  <div class="topbar-right">
-    <a class="link-back" href="https://piraci26.github.io/tht-dashboard/" title="Back to current production version">← prod</a>
-    <button id="theme-toggle" class="icon-btn" type="button" aria-label="Toggle theme">
-      <svg class="ic-sun" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-      <svg class="ic-moon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-    </button>
+
+  <div class="hero">
+    <h2>Equity flips, refreshed every 30s.</h2>
+    <p class="subtitle">Daily, weekly &amp; monthly regime changes on <strong>THT Fair Value Bands</strong> and <strong>B-Xtrender</strong> across 1,500+ US equities. Click any row to expand the chart.</p>
+    <div class="hero-meta">
+      <span class="meta-chip"><span class="pulse" aria-hidden="true"></span><span id="updated">Loading…</span></span>
+      <span class="meta-chip" id="stats-chip"><span id="stats">—</span></span>
+    </div>
+  </div>
+
+  <nav class="primary-nav" role="tablist" aria-label="Section">
+    <button class="primary-nav-btn active" data-view="scanner" role="tab">Scanner</button>
+    <button class="primary-nav-btn" data-view="articles" role="tab">Articles <span class="nav-count" id="articles-count">·</span></button>
+  </nav>
+
+  <div class="controls">
+    <div class="control-block">
+      <span class="control-label">Timeframe</span>
+      <div class="tab-row" role="tablist" aria-label="Timeframe">
+        <button class="tab-btn active" data-tf="daily" role="tab">Daily</button>
+        <button class="tab-btn" data-tf="weekly" role="tab">Weekly</button>
+        <button class="tab-btn" data-tf="monthly" role="tab">Monthly</button>
+      </div>
+    </div>
+    <div class="control-block filter-row">
+      <label class="control-label" for="mcap-filter">Min Mkt Cap</label>
+      <div class="filter-input-group">
+        <span class="filter-prefix">$</span>
+        <input id="mcap-filter" type="number" step="0.1" min="0" placeholder="3.5">
+        <span class="filter-suffix">B+</span>
+      </div>
+      <div class="filter-presets" role="group" aria-label="Market-cap presets">
+        <button type="button" data-mcap="3.5">3.5B</button>
+        <button type="button" data-mcap="10">10B</button>
+        <button type="button" data-mcap="50">50B</button>
+        <button type="button" data-mcap="200">200B</button>
+        <button type="button" data-mcap="1000">1T</button>
+      </div>
+    </div>
   </div>
 </header>
 
-<!-- ─────────── PRIMARY NAV (sub-bar) ─────────── -->
-<nav class="navbar" role="tablist" aria-label="Section">
-  <button class="primary-nav-btn active" data-view="scanner"><span class="kbd-hint">F1</span> SCANNER</button>
-  <button class="primary-nav-btn" data-view="articles"><span class="kbd-hint">F2</span> ARTICLES <span class="nav-count" id="articles-count">·</span></button>
-  <span class="navbar-spacer"></span>
-  <span class="navbar-doc">THT Fair Value Bands · B-Xtrender · 1,500+ US equities</span>
-</nav>
-
-<!-- ─────────── CONTROL STRIP ─────────── -->
-<div class="control-strip">
-  <div class="ctl-group">
-    <span class="ctl-label">TF</span>
-    <div class="seg" role="tablist" aria-label="Timeframe">
-      <button class="tab-btn active" data-tf="daily" role="tab">D</button>
-      <button class="tab-btn" data-tf="weekly" role="tab">W</button>
-      <button class="tab-btn" data-tf="monthly" role="tab">M</button>
-    </div>
-  </div>
-  <span class="ctl-divider"></span>
-  <div class="ctl-group">
-    <label class="ctl-label" for="mcap-filter">MIN&nbsp;MCAP</label>
-    <div class="ctl-input">
-      <span class="ctl-prefix">$</span>
-      <input id="mcap-filter" type="number" step="0.1" min="0" placeholder="3.5">
-      <span class="ctl-suffix">B</span>
-    </div>
-    <div class="filter-presets" role="group" aria-label="Market-cap presets">
-      <button type="button" data-mcap="3.5">3.5B</button>
-      <button type="button" data-mcap="10">10B</button>
-      <button type="button" data-mcap="50">50B</button>
-      <button type="button" data-mcap="200">200B</button>
-      <button type="button" data-mcap="1000">1T</button>
-    </div>
-  </div>
-  <span class="ctl-divider"></span>
-  <div class="ctl-group ctl-legend" aria-hidden="true">
-    <span class="lg-item"><span class="sw sw-bull"></span>BULL</span>
-    <span class="lg-item"><span class="sw sw-bear"></span>BEAR</span>
-    <span class="lg-item"><span class="sw sw-amber"></span>Δ</span>
-  </div>
-  <span class="ctl-spacer"></span>
-  <span class="ctl-hint mono">click row → chart  ·  click col header → sort</span>
-</div>
-
-<!-- ─────────── MAIN ─────────── -->
 <main>
 <div id="scanner-view">
-
-<section class="board" data-section="changes">
-  <header class="board-h">
-    <span class="board-tag tag-changes">Δ</span>
-    <h2>CHANGES</h2>
-    <span class="board-sub">since last 5-min refresh</span>
-    <span class="board-meta" id="changes-count">—</span>
-  </header>
-  <div id="changes-table" class="table-wrap"></div>
-</section>
-
-<div class="board-grid">
-  <section class="board" data-section="fvb-green">
-    <header class="board-h">
-      <span class="board-tag tag-green">FVB·G</span>
-      <h2>FAIR VALUE BANDS — flipped GREEN</h2>
-      <span class="board-meta" id="fvb-green-count">—</span>
-    </header>
-    <div id="fvb-green-table" class="table-wrap"></div>
+  <section class="changes">
+    <h2><span class="dot dot-changes"></span>Changes since last refresh</h2>
+    <div id="changes-table" class="table-wrap"></div>
   </section>
 
-  <section class="board" data-section="fvb-red">
-    <header class="board-h">
-      <span class="board-tag tag-red">FVB·R</span>
-      <h2>FAIR VALUE BANDS — flipped RED</h2>
-      <span class="board-meta" id="fvb-red-count">—</span>
-    </header>
-    <div id="fvb-red-table" class="table-wrap"></div>
-  </section>
+  <div class="flips-grid">
+    <section class="green">
+      <h2><span class="dot dot-green"></span>THT Fair Value Bands · flipped GREEN</h2>
+      <div id="fvb-green-table" class="table-wrap"></div>
+    </section>
 
-  <section class="board" data-section="bxt-green">
-    <header class="board-h">
-      <span class="board-tag tag-green">BXT·G</span>
-      <h2>B-XTRENDER — flipped GREEN</h2>
-      <span class="board-meta" id="bxt-green-count">—</span>
-    </header>
-    <div id="bxt-green-table" class="table-wrap"></div>
-  </section>
+    <section class="red">
+      <h2><span class="dot dot-red"></span>THT Fair Value Bands · flipped RED</h2>
+      <div id="fvb-red-table" class="table-wrap"></div>
+    </section>
 
-  <section class="board" data-section="bxt-red">
-    <header class="board-h">
-      <span class="board-tag tag-red">BXT·R</span>
-      <h2>B-XTRENDER — flipped RED</h2>
-      <span class="board-meta" id="bxt-red-count">—</span>
-    </header>
-    <div id="bxt-red-table" class="table-wrap"></div>
-  </section>
-</div>
+    <section class="green">
+      <h2><span class="dot dot-green"></span>B-Xtrender · flipped GREEN</h2>
+      <div id="bxt-green-table" class="table-wrap"></div>
+    </section>
 
+    <section class="red">
+      <h2><span class="dot dot-red"></span>B-Xtrender · flipped RED</h2>
+      <div id="bxt-red-table" class="table-wrap"></div>
+    </section>
+  </div>
 </div>
 
 <div id="articles-view" hidden>
-  <section class="board articles-board">
-    <header class="board-h">
-      <span class="board-tag tag-changes">DESK</span>
-      <h2>INFERENCES</h2>
-      <span class="board-sub">— what today's tape might be saying</span>
-    </header>
-    <p class="articles-disclaimer">
-      <span class="disc-tag">DISCLAIMER</span>
-      Educational observations only — <strong>not investment advice</strong>. The author/operator is not a registered investment adviser. Patterns described here may or may not predict future market behaviour.
-    </p>
+  <section class="articles">
+    <h2 class="articles-h2">Inferences <span class="articles-h2-sub">— what today's tape might be saying</span></h2>
+    <p class="articles-disclaimer">Educational observations only — <strong>not investment advice</strong>. The author/operator is not a registered investment adviser. Patterns described here may or may not predict future market behaviour.</p>
     <div id="articles-list"></div>
   </section>
 </div>
 </main>
 
-<footer class="footbar">
-  <span class="mono">REFRESH 30s</span>
-  <span class="footbar-sep">·</span>
-  <span class="mono">SRC Yahoo OHLCV</span>
-  <span class="footbar-sep">·</span>
-  <span class="mono">IND open-source Pine</span>
-  <span class="footbar-sep">·</span>
-  <span class="mono">CHART TradingView lightweight</span>
-  <span class="footbar-spacer"></span>
-  <span class="mono dim">terminal/v1</span>
+<footer>
+  <span>Auto-refreshes every 30 seconds. Yahoo Finance daily OHLCV. Indicator math from open-source Pine.</span>
+  <span><span class="kbd">↵</span> click a row to open chart</span>
 </footer>
 
 <script>
-// ─── Theme toggle (persist + prefers-color-scheme) ─────────────────
-(function(){
-  const saved = localStorage.getItem('theme');
-  if (saved) {
-    document.documentElement.dataset.theme = saved;
-  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-    document.documentElement.dataset.theme = 'light';
-  }
-  document.getElementById('theme-toggle').addEventListener('click', () => {
-    const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-    document.documentElement.dataset.theme = next;
-    localStorage.setItem('theme', next);
+// ─────────────────────────────────────────────────────────────────
+// Theme toggle (persists, defaults to prefers-color-scheme)
+// ─────────────────────────────────────────────────────────────────
+(function () {
+  const btn = document.getElementById('theme-toggle');
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    const cur = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    const next = cur === 'light' ? 'dark' : 'light';
+    if (next === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    else document.documentElement.removeAttribute('data-theme');
+    try { localStorage.setItem('theme', next); } catch (e) {}
   });
 })();
 
-// ─── Market state (NYSE rough hours, US/Eastern) ────────────────────
-function refreshMarketState() {
-  try {
-    const now = new Date();
-    const fmt = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', weekday: 'short', hour12: false });
-    const parts = fmt.formatToParts(now).reduce((o,p) => (o[p.type]=p.value, o), {});
-    const wd = parts.weekday;
-    const h = parseInt(parts.hour, 10), m = parseInt(parts.minute, 10);
-    const mins = h * 60 + m;
-    const isWk = (wd === 'Sat' || wd === 'Sun');
-    let label;
-    if (isWk) label = 'CLOSED · WKND';
-    else if (mins < 4*60) label = 'CLOSED';
-    else if (mins < 9*60+30) label = 'PRE-MKT';
-    else if (mins < 16*60) label = 'OPEN · NYSE';
-    else if (mins < 20*60) label = 'AFTER-HRS';
-    else label = 'CLOSED';
-    const el = document.getElementById('market-state');
-    el.textContent = label;
-    el.className = 'status-value mkt-' + (label.startsWith('OPEN') ? 'open' : label.startsWith('PRE') || label.startsWith('AFTER') ? 'ext' : 'closed');
-  } catch (e) {}
-}
-refreshMarketState();
-setInterval(refreshMarketState, 30000);
-
-// ─── Formatters ─────────────────────────────────────────────────────
-const fmtMcap = b => !b ? '—' : b >= 1000 ? `${(b/1000).toFixed(2)}T` : `${b.toFixed(b<10?2:1)}B`;
-const fmtPct  = p => p == null ? '—' : `${p >= 0 ? '+' : ''}${p.toFixed(1)}%`;
+// ─────────────────────────────────────────────────────────────────
+// Formatting
+// ─────────────────────────────────────────────────────────────────
+const fmtMcap = b => !b ? '—' : b >= 1000 ? `$${(b/1000).toFixed(2)}T` : `$${b}B`;
+const fmtPct  = p => p == null ? '—' : `+${p.toFixed(1)}%`;
 const fmtUpd  = iso => {
   const d = new Date(iso);
   const parts = new Intl.DateTimeFormat('en-GB', {
     timeZone: 'Europe/London',
     year: 'numeric', month: '2-digit', day: '2-digit',
     hour: '2-digit', minute: '2-digit', hour12: false,
+    timeZoneName: 'short'
   }).formatToParts(d).reduce((o,p) => (o[p.type]=p.value, o), {});
-  return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute} LDN`;
+  return `Updated ${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute} ${parts.timeZoneName}`;
 };
 
-// ─── Sort / table state ─────────────────────────────────────────────
 const sortState = {
   'fvb-green-table': {col:'mcap', dir:'desc'},
   'fvb-red-table':   {col:'mcap', dir:'desc'},
@@ -237,24 +190,20 @@ const TABLE_KEY = {
   'bxt-green-table': 'bxt_green',
   'bxt-red-table':   'bxt_red',
 };
-const COUNT_ID = {
-  'fvb-green-table': 'fvb-green-count',
-  'fvb-red-table':   'fvb-red-count',
-  'bxt-green-table': 'bxt-green-count',
-  'bxt-red-table':   'bxt-red-count',
-};
+
 const COLS = [
   {key:'idx',         label:'#',         cls:'num',  type:'idx'},
-  {key:'name',        label:'COMPANY',   cls:'',     type:'str'},
-  {key:'sym',         label:'SYM',       cls:'',     type:'str'},
-  {key:'mcap',        label:'MCAP',      cls:'num',  type:'num'},
-  {key:'price',       label:'PX',        cls:'num',  type:'num'},
-  {key:'basis',       label:'BASIS',     cls:'num',  type:'num'},
+  {key:'name',        label:'Company',   cls:'',     type:'str'},
+  {key:'sym',         label:'Sym',       cls:'',     type:'str'},
+  {key:'mcap',        label:'Mkt Cap',   cls:'num',  type:'num'},
+  {key:'price',       label:'Price',     cls:'num',  type:'num'},
+  {key:'basis',       label:'Basis',     cls:'num',  type:'num'},
   {key:'bxt_today',   label:'BXT',       cls:'num',  type:'num'},
-  {key:'streak',      label:'STRK',      cls:'num',  type:'num'},
+  {key:'streak',      label:'Streak',    cls:'num',  type:'num'},
   {key:'ath',         label:'ATH',       cls:'num',  type:'num'},
-  {key:'pct_to_ath',  label:'%·ATH',     cls:'num',  type:'num'},
+  {key:'pct_to_ath',  label:'% to ATH',  cls:'num',  type:'num'},
 ];
+
 const STREAK_KEY = {
   'fvb-green-table': 'fvb_streak',
   'fvb-red-table':   'fvb_streak',
@@ -277,63 +226,36 @@ function sortRows(rows, col, dir, tableId) {
   return sorted;
 }
 
-// ─── Sparkline (inline SVG, ~60d if available, else basis-vs-price proxy) ───
-function renderSpark(values, isBull) {
-  if (!values || values.length < 4) return '';
-  const max = Math.max(...values), min = Math.min(...values);
-  const range = max - min || 1;
-  const w = 56, h = 14;
-  const step = w / (values.length - 1);
-  let d = '';
-  values.forEach((v, i) => {
-    const x = (i * step).toFixed(1);
-    const y = (h - ((v - min) / range) * h).toFixed(1);
-    d += (i === 0 ? 'M' : 'L') + x + ' ' + y + ' ';
-  });
-  const stroke = isBull ? 'var(--c-bull)' : 'var(--c-bear)';
-  return `<svg class="spark" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><path d="${d.trim()}" fill="none" stroke="${stroke}" stroke-width="1.2" stroke-linejoin="round"/></svg>`;
-}
-
 function renderTable(rows, tableId) {
-  const countEl = document.getElementById(COUNT_ID[tableId]);
-  if (countEl) countEl.textContent = (rows && rows.length) ? `${rows.length} rows` : '0 rows';
   if (!rows || rows.length === 0) {
-    return '<p class="empty">— no flips —</p>';
+    return '<p class="empty">No flips in this bucket.</p>';
   }
   const state = sortState[tableId];
   const sorted = sortRows(rows, state.col, state.dir, tableId);
   const sk = STREAK_KEY[tableId];
   const arrow = (key) => {
     if (key === 'idx') return '';
-    if (state.col !== key) return '<span class="sort-arrow">·</span>';
-    return state.dir === 'asc' ? '<span class="sort-arrow active">▲</span>' : '<span class="sort-arrow active">▼</span>';
+    if (state.col !== key) return '<span class="sort-arrow">↕</span>';
+    return state.dir === 'asc' ? '<span class="sort-arrow active">↑</span>' : '<span class="sort-arrow active">↓</span>';
   };
   const headCells = COLS.map(c => {
     const cls = (c.cls + ' sortable' + (state.col === c.key ? ' sorted' : '')).trim();
     return `<th class="${cls}" data-col="${c.key}" data-table="${tableId}">${c.label} ${arrow(c.key)}</th>`;
   }).join('');
   const head = `<table><thead><tr>${headCells}</tr></thead><tbody>`;
-  const tfUnit = timeframe === 'weekly' ? 'w' : timeframe === 'monthly' ? 'mo' : 'd';
-  const isGreenTable = tableId.includes('green');
-
   const body = sorted.map((r,i) => {
     const streak = sk ? r[sk] : null;
-    const bxtCls = r.bxt_today >= 0 ? 'pos' : 'neg';
-    const pctAthCls = (r.pct_to_ath != null && r.pct_to_ath > -1) ? 'pos' : 'neg';
-    // sparkline proxy: 5 BXT-style increments inferred from price ratio to basis
-    const spark = renderSpark([r.basis*0.97, r.basis*0.985, r.basis, r.basis*1.005, r.price], isGreenTable);
-
     return `<tr class="row-clickable" data-sym="${r.sym}">
-    <td class="num col-idx">${String(i+1).padStart(2,'0')}</td>
-    <td class="col-name" title="${r.name}">${r.name}</td>
-    <td class="col-sym"><span class="sym-pill">${r.sym}</span></td>
-    <td class="num col-mcap"><span class="unit">$</span>${fmtMcap(r.mcap)}</td>
-    <td class="num col-price"><span class="unit">$</span>${r.price.toFixed(2)} ${spark}</td>
-    <td class="num col-basis dim"><span class="unit">$</span>${r.basis.toFixed(2)}</td>
-    <td class="num col-bxt ${bxtCls}">${r.bxt_today >= 0 ? '+' : ''}${r.bxt_today.toFixed(2)}</td>
-    <td class="num col-streak">${streak != null ? streak + '<span class="unit">' + tfUnit + '</span>' : '<span class="unit">—</span>'}</td>
-    <td class="num col-ath dim">${r.ath != null ? '<span class="unit">$</span>' + r.ath.toFixed(2) : '<span class="unit">—</span>'}</td>
-    <td class="num col-pct ${pctAthCls}">${fmtPct(r.pct_to_ath)}</td>
+    <td class="num col-idx">${i+1}</td>
+    <td class="col-name">${r.name}</td>
+    <td><strong>${r.sym}</strong></td>
+    <td class="num col-mcap">${fmtMcap(r.mcap)}</td>
+    <td class="num col-price"><span class="unit">$</span>${r.price.toFixed(2)}</td>
+    <td class="num col-basis"><span class="unit">$</span>${r.basis.toFixed(2)}</td>
+    <td class="num col-bxt">${r.bxt_today.toFixed(2)}</td>
+    <td class="num col-streak">${streak != null ? streak + '<span class="unit">' + (timeframe === 'weekly' ? 'W' : timeframe === 'monthly' ? 'M' : 'd') + '</span>' : '<span class="unit">—</span>'}</td>
+    <td class="num col-ath">${r.ath != null ? '<span class="unit">$</span>' + r.ath.toFixed(2) : '<span class="unit">—</span>'}</td>
+    <td class="num col-pct">${fmtPct(r.pct_to_ath)}</td>
   </tr>`;
   }).join('');
   return head + body + '</tbody></table>';
@@ -429,10 +351,12 @@ function wma(arr, len) {
   return out;
 }
 
-// ─── Chart rendering — TV pane stays dark in BOTH themes ───────────
+// ─────────────────────────────────────────────────────────────────
+// Chart rendering
+// ─────────────────────────────────────────────────────────────────
 const TV_COLORS = {
-  bg:        '#0e1117',
-  text:      '#c9d1d9',
+  bg:        '#131722',
+  text:      '#d1d4dc',
   grid:      '#1e222d',
   border:    '#2A2E39',
   bull:      '#26a69a',
@@ -440,6 +364,7 @@ const TV_COLORS = {
   basis:     '#2962FF',
   band:      '#787B86',
 };
+
 let openChartSym = null;
 
 async function fetchBars(sym) {
@@ -463,18 +388,12 @@ function renderChart(container, bars, sym) {
   const ch = last.close - prev.close;
   const chPct = (ch / prev.close) * 100;
   const chCol = ch >= 0 ? TV_COLORS.bull : TV_COLORS.bear;
-  const tfLabel = timeframe === 'weekly' ? '1W' : timeframe === 'monthly' ? '1M' : '1D';
   const headBar = document.createElement('div');
   headBar.className = 'tv-header';
   headBar.innerHTML = `
     <span class="tv-sym">${sym}</span>
-    <span class="tv-tf">${tfLabel}</span>
-    <span class="tv-ohlc">
-      <span>O<b>${last.open.toFixed(2)}</b></span>
-      <span>H<b>${last.high.toFixed(2)}</b></span>
-      <span>L<b>${last.low.toFixed(2)}</b></span>
-      <span>C<b>${last.close.toFixed(2)}</b></span>
-    </span>
+    <span class="tv-tf">${timeframe === 'weekly' ? '1W' : timeframe === 'monthly' ? '1M' : '1D'}</span>
+    <span class="tv-ohlc"><span>O<b>${last.open.toFixed(2)}</b></span><span>H<b>${last.high.toFixed(2)}</b></span><span>L<b>${last.low.toFixed(2)}</b></span><span>C<b>${last.close.toFixed(2)}</b></span></span>
     <span class="tv-change" style="color:${chCol}">${ch >= 0 ? '+' : ''}${ch.toFixed(2)} (${ch >= 0 ? '+' : ''}${chPct.toFixed(2)}%)</span>
   `;
   container.appendChild(headBar);
@@ -484,7 +403,7 @@ function renderChart(container, bars, sym) {
   container.appendChild(priceWrap);
 
   const baseLayout = {
-    layout: { background: { color: TV_COLORS.bg }, textColor: TV_COLORS.text, fontSize: 11, fontFamily: 'ui-monospace, "JetBrains Mono", "SF Mono", Menlo, monospace' },
+    layout: { background: { color: TV_COLORS.bg }, textColor: TV_COLORS.text, fontSize: 11, fontFamily: 'ui-sans-serif, -apple-system, "Inter", system-ui, sans-serif' },
     grid: { vertLines: { color: TV_COLORS.grid }, horzLines: { color: TV_COLORS.grid } },
     crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
     rightPriceScale: { borderColor: TV_COLORS.border, scaleMargins: { top: 0.05, bottom: 0.25 } },
@@ -496,7 +415,6 @@ function renderChart(container, bars, sym) {
 
   const greenFill = 'rgba(0,135,90,0.40)';
   const redFill   = 'rgba(120,40,40,0.45)';
-
   const segments = [];
   let curr = null;
   for (let i = 0; i < bars.length; i++) {
@@ -509,14 +427,19 @@ function renderChart(container, bars, sym) {
     curr.upper.push({ time: bars[i].time, value: upper[i] });
     curr.lower.push({ time: bars[i].time, value: lower[i] });
   }
-  const greenEdge = '#26a69a';
-  const redEdge   = '#ef5350';
+  const greenEdge = '#26a69a', redEdge = '#ef5350';
   for (const seg of segments) {
     const fill = seg.type === 'bull' ? greenFill : redFill;
     const edge = seg.type === 'bull' ? greenEdge : redEdge;
-    const u = priceChart.addAreaSeries({ topColor: fill, bottomColor: fill, lineColor: 'rgba(0,0,0,0)', lineWidth: 0, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false });
+    const u = priceChart.addAreaSeries({
+      topColor: fill, bottomColor: fill, lineColor: 'rgba(0,0,0,0)', lineWidth: 0,
+      priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false,
+    });
     u.setData(seg.upper);
-    const l = priceChart.addAreaSeries({ topColor: TV_COLORS.bg, bottomColor: TV_COLORS.bg, lineColor: 'rgba(0,0,0,0)', lineWidth: 0, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false });
+    const l = priceChart.addAreaSeries({
+      topColor: TV_COLORS.bg, bottomColor: TV_COLORS.bg, lineColor: 'rgba(0,0,0,0)', lineWidth: 0,
+      priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false,
+    });
     l.setData(seg.lower);
     const upperEdgeLine = priceChart.addLineSeries({ color: edge, lineWidth: 2, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false });
     upperEdgeLine.setData(seg.upper);
@@ -543,14 +466,24 @@ function renderChart(container, bars, sym) {
     if (basis[i] == null || basis[i-1] == null) continue;
     const bullToday = bars[i].close > basis[i];
     const bullYest  = bars[i-1].close > basis[i-1];
-    if (bullToday && !bullYest) markers.push({ time: bars[i].time, position: 'inBar', color: '#26a69a', shape: 'circle', size: 1.2 });
-    else if (!bullToday && bullYest) markers.push({ time: bars[i].time, position: 'inBar', color: '#ef5350', shape: 'circle', size: 1.2 });
+    if (bullToday && !bullYest) {
+      markers.push({ time: bars[i].time, position: 'inBar', color: '#26a69a', shape: 'circle', size: 1.2 });
+    } else if (!bullToday && bullYest) {
+      markers.push({ time: bars[i].time, position: 'inBar', color: '#ef5350', shape: 'circle', size: 1.2 });
+    }
   }
   basisLine.setMarkers(markers);
 
-  const volSeries = priceChart.addHistogramSeries({ priceFormat: { type: 'volume' }, priceScaleId: 'volume', color: 'rgba(120,123,134,0.5)' });
+  const volSeries = priceChart.addHistogramSeries({
+    priceFormat: { type: 'volume' },
+    priceScaleId: 'volume',
+    color: 'rgba(120,123,134,0.5)',
+  });
   volSeries.priceScale().applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
-  volSeries.setData(bars.map(b => ({ time: b.time, value: b.volume || 0, color: b.close >= b.open ? 'rgba(38,166,154,0.4)' : 'rgba(239,83,80,0.4)' })));
+  volSeries.setData(bars.map(b => ({
+    time: b.time, value: b.volume || 0,
+    color: b.close >= b.open ? 'rgba(38,166,154,0.4)' : 'rgba(239,83,80,0.4)',
+  })));
 
   const bxtWrap = document.createElement('div');
   bxtWrap.style.cssText = 'height: 150px; width: 100%; margin-top: 1px;';
@@ -561,10 +494,13 @@ function renderChart(container, bars, sym) {
     rightPriceScale: { borderColor: TV_COLORS.border, scaleMargins: { top: 0.1, bottom: 0.1 } },
     watermark: { visible: true, color: 'rgba(120,123,134,0.25)', text: 'B-Xtrender', fontSize: 14, horzAlign: 'left', vertAlign: 'top' },
   });
+
   const shortHist = bxtChart.addHistogramSeries({ priceFormat: { type: 'price', precision: 2, minMove: 0.01 } });
   shortHist.setData(bars.map((b, i) => bxtShort[i] != null ? { time: b.time, value: bxtShort[i], color: bxtShort[i] >= 0 ? '#00C853' : '#B71C1C' } : null).filter(Boolean));
+
   const shortLine = bxtChart.addLineSeries({ color: '#00E676', lineWidth: 2, priceLineVisible: false, lastValueVisible: true });
   shortLine.setData(bars.map((b, i) => bxtShortSmooth[i] != null ? { time: b.time, value: bxtShortSmooth[i] } : null).filter(Boolean));
+
   const longLine = bxtChart.addLineSeries({ color: '#FF5252', lineWidth: 2, priceLineVisible: false, lastValueVisible: true });
   longLine.setData(bars.map((b, i) => bxtLongSmooth[i] != null ? { time: b.time, value: bxtLongSmooth[i] } : null).filter(Boolean));
 
@@ -572,35 +508,42 @@ function renderChart(container, bars, sym) {
   for (let i = 1; i < bars.length; i++) {
     const a = bxtShortSmooth, b = bxtLongSmooth;
     if (a[i] == null || a[i-1] == null || b[i] == null || b[i-1] == null) continue;
-    if (a[i-1] <= b[i-1] && a[i] > b[i]) xMarkers.push({ time: bars[i].time, position: 'belowBar', color: TV_COLORS.bull, shape: 'circle' });
-    else if (a[i-1] >= b[i-1] && a[i] < b[i]) xMarkers.push({ time: bars[i].time, position: 'aboveBar', color: TV_COLORS.bear, shape: 'circle' });
+    if (a[i-1] <= b[i-1] && a[i] > b[i]) {
+      xMarkers.push({ time: bars[i].time, position: 'belowBar', color: TV_COLORS.bull, shape: 'circle' });
+    } else if (a[i-1] >= b[i-1] && a[i] < b[i]) {
+      xMarkers.push({ time: bars[i].time, position: 'aboveBar', color: TV_COLORS.bear, shape: 'circle' });
+    }
   }
   shortLine.setMarkers(xMarkers);
 
   priceChart.timeScale().subscribeVisibleLogicalRangeChange(r => r && bxtChart.timeScale().setVisibleLogicalRange(r));
   bxtChart.timeScale().subscribeVisibleLogicalRangeChange(r => r && priceChart.timeScale().setVisibleLogicalRange(r));
   priceChart.timeScale().fitContent();
-  priceChart.subscribeCrosshairMove(p => { if (!p.time) return; bxtChart.setCrosshairPosition(0, p.time, longLine); });
-  bxtChart.subscribeCrosshairMove(p => { if (!p.time) return; priceChart.setCrosshairPosition(0, p.time, basisLine); });
+
+  priceChart.subscribeCrosshairMove(p => {
+    if (!p.time) return;
+    bxtChart.setCrosshairPosition(0, p.time, longLine);
+  });
+  bxtChart.subscribeCrosshairMove(p => {
+    if (!p.time) return;
+    priceChart.setCrosshairPosition(0, p.time, basisLine);
+  });
 }
 
 async function toggleChart(tr, sym) {
   const next = tr.nextElementSibling;
   if (next && next.classList.contains('chart-row') && next.dataset.sym === sym) {
     next.remove();
-    tr.classList.remove('row-open');
     openChartSym = null;
     return;
   }
   document.querySelectorAll('tr.chart-row').forEach(el => el.remove());
-  document.querySelectorAll('tr.row-open').forEach(el => el.classList.remove('row-open'));
-  tr.classList.add('row-open');
 
   const colspan = tr.children.length;
   const chartRow = document.createElement('tr');
   chartRow.className = 'chart-row';
   chartRow.dataset.sym = sym;
-  chartRow.innerHTML = `<td colspan="${colspan}"><div class="chart-container"><div class="chart-body"><div class="chart-loading" role="status" aria-live="polite"><span class="sr-only">Loading chart</span><span class="ldot"></span><span class="ldot"></span><span class="ldot"></span></div></div></div></td>`;
+  chartRow.innerHTML = `<td colspan="${colspan}"><div class="chart-container"><div class="chart-body"><div class="chart-loading" role="status" aria-live="polite"><span class="sr-only">Loading chart</span></div></div></div></td>`;
   tr.parentNode.insertBefore(chartRow, tr.nextSibling);
   openChartSym = sym;
 
@@ -611,11 +554,10 @@ async function toggleChart(tr, sym) {
     body.innerHTML = '';
     renderChart(body, bars, sym);
   } catch (e) {
-    chartRow.querySelector('.chart-body').innerHTML = `<div class="chart-error">FAIL · ${e.message}</div>`;
+    chartRow.querySelector('.chart-body').innerHTML = `<div class="chart-error">Failed to load: ${e.message}</div>`;
   }
 }
 
-// ─── Click handlers ────────────────────────────────────────────────
 document.addEventListener('click', e => {
   const th = e.target.closest('th.sortable');
   if (th) {
@@ -643,69 +585,71 @@ const resultsUrl = () => timeframe === 'daily' ? 'results.json' : `results_${tim
 const barsBaseUrl = () => timeframe === 'daily' ? 'bars' : `bars_${timeframe}`;
 
 function renderChanges(changes) {
-  const cnt = document.getElementById('changes-count');
-  if (!changes) { if (cnt) cnt.textContent = '0 rows'; return '<p class="empty">— no prior run —</p>'; }
+  if (!changes) return '<p class="empty">No prior run to compare to.</p>';
   const buckets = [
-    {label: 'FVB · GREEN',  short: 'FVB·G', items: changes.fvb_green_added,   action: 'added',   color: 'green'},
-    {label: 'FVB · GREEN',  short: 'FVB·G', items: changes.fvb_green_removed, action: 'removed', color: 'green'},
-    {label: 'FVB · RED',    short: 'FVB·R', items: changes.fvb_red_added,     action: 'added',   color: 'red'},
-    {label: 'FVB · RED',    short: 'FVB·R', items: changes.fvb_red_removed,   action: 'removed', color: 'red'},
-    {label: 'BXT · GREEN',  short: 'BXT·G', items: changes.bxt_green_added,   action: 'added',   color: 'green'},
-    {label: 'BXT · GREEN',  short: 'BXT·G', items: changes.bxt_green_removed, action: 'removed', color: 'green'},
-    {label: 'BXT · RED',    short: 'BXT·R', items: changes.bxt_red_added,     action: 'added',   color: 'red'},
-    {label: 'BXT · RED',    short: 'BXT·R', items: changes.bxt_red_removed,   action: 'removed', color: 'red'},
+    {label: 'FVB · Green',     items: changes.fvb_green_added,   action: 'added',   color: 'green'},
+    {label: 'FVB · Green',     items: changes.fvb_green_removed, action: 'removed', color: 'green'},
+    {label: 'FVB · Red',       items: changes.fvb_red_added,     action: 'added',   color: 'red'},
+    {label: 'FVB · Red',       items: changes.fvb_red_removed,   action: 'removed', color: 'red'},
+    {label: 'BXT · Green',     items: changes.bxt_green_added,   action: 'added',   color: 'green'},
+    {label: 'BXT · Green',     items: changes.bxt_green_removed, action: 'removed', color: 'green'},
+    {label: 'BXT · Red',       items: changes.bxt_red_added,     action: 'added',   color: 'red'},
+    {label: 'BXT · Red',       items: changes.bxt_red_removed,   action: 'removed', color: 'red'},
   ];
   const total = buckets.reduce((s,b) => s + (b.items?.length || 0), 0);
-  if (cnt) cnt.textContent = `${total} rows`;
-  if (total === 0) return '<p class="empty">— no changes since last refresh —</p>';
+  if (total === 0) return '<p class="empty">No changes since last refresh.</p>';
   const head = `<table>
     <thead><tr>
-      <th>BUCKET</th><th>ACTION</th>
-      <th>COMPANY</th><th>SYM</th>
-      <th class="num">MCAP</th>
-      <th class="num">PX</th>
-      <th class="num">BASIS</th>
+      <th>Bucket</th><th>Action</th>
+      <th>Company</th><th>Sym</th>
+      <th class="num">Mkt Cap</th>
+      <th class="num">Price</th>
+      <th class="num">Basis</th>
       <th class="num">BXT</th>
       <th class="num">ATH</th>
-      <th class="num">%·ATH</th>
+      <th class="num">% to ATH</th>
     </tr></thead><tbody>`;
   const usd = v => v == null ? '<span class="unit">—</span>' : `<span class="unit">$</span>${v.toFixed(2)}`;
   const num = v => v == null ? '<span class="unit">—</span>' : v.toFixed(2);
   const body = buckets.flatMap(b =>
-    (b.items || []).map(item => {
-      const bxtCls = item.bxt_today != null ? (item.bxt_today >= 0 ? 'pos' : 'neg') : '';
-      return `<tr class="row-clickable" data-sym="${item.sym}">
-      <td class="col-bucket"><span class="bk bk-${b.color}">${b.short}</span></td>
-      <td><span class="badge badge-${b.color} badge-${b.action}">${b.action.toUpperCase()}</span></td>
-      <td class="col-name" title="${item.name}">${item.name}</td>
-      <td class="col-sym"><span class="sym-pill">${item.sym}</span></td>
-      <td class="num col-mcap"><span class="unit">$</span>${item.mcap ? fmtMcap(item.mcap) : '—'}</td>
+    (b.items || []).map(item => `<tr class="row-clickable" data-sym="${item.sym}">
+      <td class="col-bucket">${b.label}</td>
+      <td><span class="badge badge-${b.color} badge-${b.action}">${b.action}</span></td>
+      <td class="col-name">${item.name}</td>
+      <td><strong>${item.sym}</strong></td>
+      <td class="num col-mcap">${fmtMcap(item.mcap)}</td>
       <td class="num col-price">${usd(item.price)}</td>
-      <td class="num col-basis dim">${usd(item.basis)}</td>
-      <td class="num col-bxt ${bxtCls}">${num(item.bxt_today)}</td>
-      <td class="num col-ath dim">${usd(item.ath)}</td>
+      <td class="num col-basis">${usd(item.basis)}</td>
+      <td class="num col-bxt">${num(item.bxt_today)}</td>
+      <td class="num col-ath">${usd(item.ath)}</td>
       <td class="num col-pct">${item.pct_to_ath != null ? '+' + item.pct_to_ath.toFixed(1) + '%' : '<span class="unit">—</span>'}</td>
-    </tr>`;
-    })
+    </tr>`)
   ).join('');
   return head + body + '</tbody></table>';
 }
 
-function tableHostsOpenChart(wrapId) { return !!document.querySelector(`#${wrapId} tr.chart-row`); }
-function setIfNotOpen(wrapId, html) { if (tableHostsOpenChart(wrapId)) return; document.getElementById(wrapId).innerHTML = html; }
+function tableHostsOpenChart(wrapId) {
+  return !!document.querySelector(`#${wrapId} tr.chart-row`);
+}
+function setIfNotOpen(wrapId, html) {
+  if (tableHostsOpenChart(wrapId)) return;
+  document.getElementById(wrapId).innerHTML = html;
+}
 
 function renderAll() {
   if (!currentData) return;
   const d = currentData;
   const fg = filterRows(d.fvb_green), fr = filterRows(d.fvb_red);
   const bg = filterRows(d.bxt_green), br = filterRows(d.bxt_red);
-  document.getElementById('stats').innerHTML =
-    `<span class="stat-k">SCN</span> <span class="stat-v">${d.scanned_count}</span> <span class="stat-k">in</span> <span class="stat-v">${d.scan_seconds}s</span> <span class="status-sep">·</span> <span class="stat-k">FVB</span> <span class="stat-v fvg">${fg.length}g</span>/<span class="stat-v fvr">${fr.length}r</span> <span class="status-sep">·</span> <span class="stat-k">BXT</span> <span class="stat-v fvg">${bg.length}g</span>/<span class="stat-v fvr">${br.length}r</span>`;
-  const filteredChanges = { compared_to: d.changes.compared_to };
-  for (const k of ['fvb_green_added','fvb_green_removed','fvb_red_added','fvb_red_removed','bxt_green_added','bxt_green_removed','bxt_red_added','bxt_red_removed']) {
-    filteredChanges[k] = filterRows(d.changes[k]);
+  document.getElementById('stats').textContent =
+    `${d.scanned_count} scanned · ${d.scan_seconds}s · FVB ${fg.length}g/${fr.length}r · BXT ${bg.length}g/${br.length}r`;
+  const filteredChanges = { compared_to: d.changes ? d.changes.compared_to : null };
+  if (d.changes) {
+    for (const k of ['fvb_green_added','fvb_green_removed','fvb_red_added','fvb_red_removed','bxt_green_added','bxt_green_removed','bxt_red_added','bxt_red_removed']) {
+      filteredChanges[k] = filterRows(d.changes[k]);
+    }
   }
-  setIfNotOpen('changes-table',  renderChanges(filteredChanges));
+  setIfNotOpen('changes-table',  renderChanges(d.changes ? filteredChanges : null));
   setIfNotOpen('fvb-green-table', renderTable(fg, 'fvb-green-table'));
   setIfNotOpen('fvb-red-table',   renderTable(fr, 'fvb-red-table'));
   setIfNotOpen('bxt-green-table', renderTable(bg, 'bxt-green-table'));
@@ -753,10 +697,9 @@ document.querySelectorAll('.tab-btn').forEach(b => {
     localStorage.setItem('timeframe', timeframe);
     syncTabs();
     document.querySelectorAll('tr.chart-row').forEach(el => el.remove());
-    document.querySelectorAll('tr.row-open').forEach(el => el.classList.remove('row-open'));
     openChartSym = null;
     currentData = null;
-    document.getElementById('updated').textContent = '···';
+    document.getElementById('updated').textContent = 'Loading…';
     load();
   });
 });
@@ -764,7 +707,6 @@ syncTabs();
 
 let activeView = localStorage.getItem('activeView') || 'scanner';
 let articlesLoaded = false;
-
 function syncPrimaryNav() {
   document.querySelectorAll('.primary-nav-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.view === activeView);
@@ -780,22 +722,6 @@ document.querySelectorAll('.primary-nav-btn').forEach(b => {
     localStorage.setItem('activeView', activeView);
     syncPrimaryNav();
   });
-});
-
-// Keyboard shortcuts F1/F2 + 1/2/3 timeframe
-document.addEventListener('keydown', e => {
-  if (e.target.tagName === 'INPUT') return;
-  if (e.key === 'F1') { e.preventDefault(); activeView = 'scanner'; localStorage.setItem('activeView', activeView); syncPrimaryNav(); }
-  else if (e.key === 'F2') { e.preventDefault(); activeView = 'articles'; localStorage.setItem('activeView', activeView); syncPrimaryNav(); }
-  else if (e.key === '1' || e.key === '2' || e.key === '3') {
-    const tf = ['daily','weekly','monthly'][parseInt(e.key,10)-1];
-    if (tf && tf !== timeframe) {
-      timeframe = tf; localStorage.setItem('timeframe', timeframe); syncTabs();
-      document.querySelectorAll('tr.chart-row').forEach(el => el.remove());
-      document.querySelectorAll('tr.row-open').forEach(el => el.classList.remove('row-open'));
-      currentData = null; document.getElementById('updated').textContent = '···'; load();
-    }
-  }
 });
 
 function renderMD(md) {
@@ -826,13 +752,13 @@ async function loadArticles() {
     container.innerHTML = articles.map(a => `
       <article class="article-card" data-id="${a.id}">
         <div class="article-meta">
-          <span class="article-date mono">${a.date}</span>
+          <span class="article-date">${a.date}</span>
           ${(a.tags || []).map(t => `<span class="article-tag">${t}</span>`).join('')}
         </div>
         <h3 class="article-title">${a.title}</h3>
         <p class="article-summary">${a.summary || ''}</p>
         <div class="article-body" hidden>${renderMD(a.body)}</div>
-        <button class="article-toggle" type="button">READ →</button>
+        <button class="article-toggle" type="button">Read →</button>
       </article>
     `).join('');
     container.querySelectorAll('.article-toggle').forEach(btn => {
@@ -841,13 +767,13 @@ async function loadArticles() {
         const body = card.querySelector('.article-body');
         const open = !body.hidden;
         body.hidden = open;
-        btn.textContent = open ? 'READ →' : 'CLOSE ↑';
+        btn.textContent = open ? 'Read →' : 'Close ↑';
         card.classList.toggle('expanded', !open);
       });
     });
     articlesLoaded = true;
   } catch (e) {
-    document.getElementById('articles-list').innerHTML = '<p class="empty">— articles.json not found —</p>';
+    document.getElementById('articles-list').innerHTML = '<p class="empty">Couldn\'t load articles. Check articles.json exists.</p>';
   }
 }
 
@@ -860,7 +786,7 @@ async function load() {
     currentData = data;
     renderAll();
   } catch (e) {
-    document.getElementById('updated').textContent = 'FAIL · results.json';
+    document.getElementById('updated').textContent = 'Failed to load results.json';
   }
 }
 

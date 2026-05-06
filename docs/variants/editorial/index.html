@@ -6,102 +6,107 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>The Dual Scan — A Quant Bulletin</title>
+<title>THT Dual Scan</title>
+<meta name="theme-color" content="#FFFFFF">
 <link rel="stylesheet" href="style.css">
 <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+<script>
+  // Set theme before paint to avoid flash
+  (function () {
+    try {
+      var saved = localStorage.getItem('theme');
+      var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var theme = saved || (prefersDark ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    } catch (e) {}
+  })();
+</script>
 </head>
 <body>
 
-<!-- ─────────────── MASTHEAD ─────────────── -->
-<header class="masthead">
-  <div class="masthead-inner">
-    <div class="masthead-left">
-      <span class="folio">Vol.&nbsp;I &nbsp;·&nbsp; <span id="folio-date">—</span></span>
-    </div>
-    <div class="masthead-center">
+<!-- ─────────────── TOP BAR ─────────────── -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="brand-glyph" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22">
+          <path d="M3 17 L9 11 L13 14 L21 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="3" cy="17" r="1.6" fill="currentColor"/>
+          <circle cx="21" cy="6" r="1.6" fill="currentColor"/>
+        </svg>
+      </span>
       <h1 class="wordmark">
-        <span class="wordmark-the">The</span>
-        <span class="wordmark-name">Dual&nbsp;Scan</span>
+        <span class="wordmark-name">THT Dual Scan</span>
+        <span class="dev-pill">DEV2</span>
       </h1>
-      <p class="tagline">A bulletin of regime changes in the U.S. equity tape.</p>
     </div>
-    <div class="masthead-right">
-      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle theme">
+    <div class="topbar-right">
+      <span class="status-line">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span id="updated">Loading…</span>
+      </span>
+      <button id="theme-toggle" class="icon-btn" type="button" aria-label="Toggle appearance">
         <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-          <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.4"/>
-          <g stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
-            <path d="M12 2v3"/><path d="M12 19v3"/>
-            <path d="M2 12h3"/><path d="M19 12h3"/>
-            <path d="M4.6 4.6l2.1 2.1"/><path d="M17.3 17.3l2.1 2.1"/>
-            <path d="M4.6 19.4l2.1-2.1"/><path d="M17.3 6.7l2.1-2.1"/>
+          <circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+          <g stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+            <path d="M12 2.5v2.5"/><path d="M12 19v2.5"/>
+            <path d="M2.5 12H5"/><path d="M19 12h2.5"/>
+            <path d="M4.9 4.9l1.8 1.8"/><path d="M17.3 17.3l1.8 1.8"/>
+            <path d="M4.9 19.1l1.8-1.8"/><path d="M17.3 6.7l1.8-1.8"/>
           </g>
         </svg>
         <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-          <path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+          <path d="M20.5 14.5A8.2 8.2 0 0 1 9.5 3.5a.5.5 0 0 0-.7-.6 9 9 0 1 0 12.3 12.3.5.5 0 0 0-.6-.7z" fill="currentColor"/>
         </svg>
       </button>
-      <span class="dev-stamp">DEV·II</span>
     </div>
   </div>
-  <div class="rule-double" aria-hidden="true"></div>
 </header>
 
-<!-- ─────────────── SECTION NAV ─────────────── -->
-<nav class="section-nav" role="tablist" aria-label="Section">
-  <div class="section-nav-inner">
-    <button class="primary-nav-btn active" data-view="scanner">
-      <span class="sn-num">I.</span> The Scanner
-    </button>
-    <button class="primary-nav-btn" data-view="articles">
-      <span class="sn-num">II.</span> The Inferences
-      <span class="nav-count" id="articles-count">·</span>
-    </button>
-    <a class="primary-nav-btn primary-nav-link" href="https://piraci26.github.io/tht-dashboard/">
-      <span class="sn-num">III.</span> Production Edition <span class="ext-arrow">↗</span>
-    </a>
+<!-- ─────────────── HERO ─────────────── -->
+<section class="hero">
+  <div class="hero-inner">
+    <h2 class="hero-title">Today on the Tape</h2>
+    <p class="hero-sub">Daily, weekly &amp; monthly trend flips on <strong>Fair Value Bands</strong> and <strong>B-Xtrender</strong> across 1,500+ U.S. equities. Tap a row to expand the chart.</p>
+    <div class="hero-stats" id="stats">—</div>
   </div>
-</nav>
+</section>
 
-<main class="paper">
+<!-- ─────────────── PRIMARY NAV ─────────────── -->
+<div class="container">
+  <div class="segmented primary-segmented" role="tablist" aria-label="Section">
+    <button class="primary-nav-btn segmented-btn active" data-view="scanner" role="tab">
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M3 17l4-4 3 3 5-5 6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Scanner
+    </button>
+    <button class="primary-nav-btn segmented-btn" data-view="articles" role="tab">
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M5 4h11l3 3v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 10h8M8 14h8M8 18h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      Articles <span class="nav-count" id="articles-count">·</span>
+    </button>
+  </div>
+</div>
 
-<!-- ═══════════════════ SCANNER VIEW ═══════════════════ -->
+<main class="container">
+
+<!-- ─────────────── SCANNER ─────────────── -->
 <div id="scanner-view">
 
-  <article class="lede">
-    <p class="kicker">From the Editor</p>
-    <h2 class="lede-hed">
-      <span class="dropcap">D</span>aily, weekly &amp; monthly flips on the
-      <em>THT&nbsp;Fair&nbsp;Value&nbsp;Bands</em> and
-      <em>B&#8209;Xtrender</em> across roughly fifteen-hundred U.S. equities.
-      Every row, when struck, reveals its chart.
-    </h2>
-    <div class="lede-meta">
-      <span class="byline">By&nbsp;<span class="byline-name">The Operator</span></span>
-      <span class="dotsep">·</span>
-      <span class="pulse" aria-hidden="true"></span>
-      <span id="updated">Loading…</span>
-      <span class="dotsep">·</span>
-      <span id="stats" class="stats-line">—</span>
+<!-- Controls card -->
+<section class="card controls-card">
+  <div class="control-block">
+    <span class="control-label">Timeframe</span>
+    <div class="segmented timeframe-segmented" role="tablist" aria-label="Timeframe">
+      <button class="tab-btn segmented-btn active" data-tf="daily" role="tab">Daily</button>
+      <button class="tab-btn segmented-btn" data-tf="weekly" role="tab">Weekly</button>
+      <button class="tab-btn segmented-btn" data-tf="monthly" role="tab">Monthly</button>
     </div>
-  </article>
-
-  <hr class="rule-thin">
-
-  <!-- Controls strip -->
-  <section class="controls" aria-label="Controls">
-    <div class="control-block">
-      <span class="control-label">Timeframe</span>
-      <div class="tab-row" role="tablist" aria-label="Timeframe">
-        <button class="tab-btn active" data-tf="daily" role="tab">Daily</button>
-        <button class="tab-btn" data-tf="weekly" role="tab">Weekly</button>
-        <button class="tab-btn" data-tf="monthly" role="tab">Monthly</button>
-      </div>
-    </div>
-    <div class="control-block filter-row">
-      <label class="control-label" for="mcap-filter">Min.&nbsp;Mkt.&nbsp;Cap</label>
+  </div>
+  <div class="control-block control-block-filter">
+    <label class="control-label" for="mcap-filter">Min Market Cap</label>
+    <div class="filter-row">
       <div class="filter-input-group">
         <span class="filter-prefix">$</span>
-        <input id="mcap-filter" type="number" step="0.1" min="0" placeholder="3.5">
+        <input id="mcap-filter" type="number" step="0.1" min="0" placeholder="3.5" inputmode="decimal">
         <span class="filter-suffix">B+</span>
       </div>
       <div class="filter-presets" role="group" aria-label="Market-cap presets">
@@ -112,144 +117,112 @@
         <button type="button" data-mcap="1000">1T</button>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <hr class="rule-thin">
-
-  <!-- ─── SECTION: Changes ─── -->
-  <section class="dispatch dispatch-changes">
-    <div class="dispatch-head">
-      <span class="section-roman">§</span>
-      <p class="kicker kicker-mute">Front matter</p>
-      <h3 class="dispatch-h">Changes since the last refresh</h3>
-      <p class="deck">A delta against the prior five-minute scan. Additions and dropouts are marked.</p>
+<section class="section">
+  <header class="section-head">
+    <span class="section-icon section-icon-changes" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="14" height="14"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+    <div>
+      <h2 class="section-title">Recent Changes</h2>
+      <p class="section-sub">New &amp; dropped flips since the last refresh.</p>
     </div>
+  </header>
+  <div class="card card-table">
     <div id="changes-table" class="table-wrap"></div>
-  </section>
+  </div>
+</section>
 
-  <hr class="rule-section">
-
-  <!-- ─── SECTION: FVB Green ─── -->
-  <section class="dispatch dispatch-fvb-green">
-    <div class="dispatch-head">
-      <span class="section-roman">I</span>
-      <p class="kicker">Long signal</p>
-      <h3 class="dispatch-h">Fair Value Bands flipped <em>green</em></h3>
-      <p class="deck">Names whose close has crossed above the twenty-bar basis. Sortable by every column.</p>
+<section class="section">
+  <header class="section-head">
+    <span class="section-icon section-icon-green" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="14" height="14"><path d="M5 14l5-7 4 5 5-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+    <div>
+      <h2 class="section-title">Fair Value Bands · Bullish</h2>
+      <p class="section-sub">Closed above the 20-period basis today.</p>
     </div>
+  </header>
+  <div class="card card-table">
     <div id="fvb-green-table" class="table-wrap"></div>
-  </section>
+  </div>
+</section>
 
-  <hr class="rule-section">
-
-  <!-- ─── SECTION: FVB Red ─── -->
-  <section class="dispatch dispatch-fvb-red">
-    <div class="dispatch-head">
-      <span class="section-roman">II</span>
-      <p class="kicker">Short signal</p>
-      <h3 class="dispatch-h">Fair Value Bands flipped <em>red</em></h3>
-      <p class="deck">Names whose close has fallen beneath the twenty-bar basis.</p>
+<section class="section">
+  <header class="section-head">
+    <span class="section-icon section-icon-red" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="14" height="14"><path d="M5 10l5 7 4-5 5 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+    <div>
+      <h2 class="section-title">Fair Value Bands · Bearish</h2>
+      <p class="section-sub">Closed below the 20-period basis today.</p>
     </div>
+  </header>
+  <div class="card card-table">
     <div id="fvb-red-table" class="table-wrap"></div>
-  </section>
+  </div>
+</section>
 
-  <hr class="rule-section">
-
-  <!-- ─── SECTION: BXT Green ─── -->
-  <section class="dispatch dispatch-bxt-green">
-    <div class="dispatch-head">
-      <span class="section-roman">III</span>
-      <p class="kicker">Momentum</p>
-      <h3 class="dispatch-h">B-Xtrender flipped <em>green</em></h3>
-      <p class="deck">RSI of the EMA-differential has crossed above zero. Acceleration up.</p>
+<section class="section">
+  <header class="section-head">
+    <span class="section-icon section-icon-green" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="14" height="14"><path d="M4 18l4-4 3 3 4-5 5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+    <div>
+      <h2 class="section-title">B-Xtrender · Bullish</h2>
+      <p class="section-sub">Short-term momentum crossed above zero.</p>
     </div>
+  </header>
+  <div class="card card-table">
     <div id="bxt-green-table" class="table-wrap"></div>
-  </section>
+  </div>
+</section>
 
-  <hr class="rule-section">
-
-  <!-- ─── SECTION: BXT Red ─── -->
-  <section class="dispatch dispatch-bxt-red">
-    <div class="dispatch-head">
-      <span class="section-roman">IV</span>
-      <p class="kicker">Momentum</p>
-      <h3 class="dispatch-h">B-Xtrender flipped <em>red</em></h3>
-      <p class="deck">Acceleration has flipped negative. Tops typically signal here first.</p>
+<section class="section">
+  <header class="section-head">
+    <span class="section-icon section-icon-red" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="14" height="14"><path d="M4 6l4 4 3-3 4 5 5-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+    <div>
+      <h2 class="section-title">B-Xtrender · Bearish</h2>
+      <p class="section-sub">Short-term momentum crossed below zero.</p>
     </div>
+  </header>
+  <div class="card card-table">
     <div id="bxt-red-table" class="table-wrap"></div>
-  </section>
+  </div>
+</section>
 
-</div>
+</div><!-- /scanner-view -->
 
-<!-- ═══════════════════ ARTICLES VIEW ═══════════════════ -->
+<!-- ─────────────── ARTICLES ─────────────── -->
 <div id="articles-view" hidden>
-  <section class="articles">
-
-    <article class="lede lede-articles">
-      <p class="kicker">The Inferences</p>
-      <h2 class="lede-hed">
-        <span class="dropcap">W</span>hat today's tape might be saying — read closely, not credulously.
-      </h2>
-      <p class="articles-disclaimer">
-        Educational observations only — <strong>not investment advice</strong>.
-        The author/operator is not a registered investment adviser.
-        Patterns described here may or may not predict future market behaviour.
-      </p>
-    </article>
-
-    <hr class="rule-section">
-
+  <section class="section articles-section">
+    <header class="section-head">
+      <span class="section-icon section-icon-blue" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="14" height="14"><path d="M5 4h11l3 3v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+      </span>
+      <div>
+        <h2 class="section-title">Inferences</h2>
+        <p class="section-sub">What today's tape might be saying.</p>
+      </div>
+    </header>
+    <div class="card disclaimer-card">
+      <p class="articles-disclaimer">Educational observations only — <strong>not investment advice</strong>. The author/operator is not a registered investment adviser. Patterns described here may or may not predict future market behaviour.</p>
+    </div>
     <div id="articles-list"></div>
   </section>
 </div>
 
 </main>
 
-<footer class="colophon">
-  <div class="colophon-inner">
-    <p class="colophon-line">
-      <span class="colophon-mark">§</span>
-      Auto-refreshes every thirty seconds.
-      Yahoo Finance daily OHLCV; indicator math from open-source Pine.
-    </p>
-    <p class="colophon-line colophon-mute">
-      Set in <em>Iowan Old Style</em>, <em>Charter</em>, and the system mono. <span class="dotsep">·</span> No tracker, no pixel beyond the operator's own.
-    </p>
-  </div>
+<footer class="page-footer">
+  <p>Auto-refreshes every 30 seconds. Yahoo Finance daily OHLCV. Indicator math from open-source Pine.</p>
 </footer>
 
 <script>
-// ─────────────────────────────────────────────────────────────────
-// THEME
-// ─────────────────────────────────────────────────────────────────
-(function initTheme() {
-  const saved = localStorage.getItem('themeChoice');
-  let theme;
-  if (saved === 'light' || saved === 'dark') {
-    theme = saved;
-  } else {
-    theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-  }
-  document.documentElement.setAttribute('data-theme', theme);
-})();
-document.getElementById('theme-toggle').addEventListener('click', () => {
-  const cur = document.documentElement.getAttribute('data-theme');
-  const next = cur === 'light' ? 'dark' : 'light';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('themeChoice', next);
-});
-
-// Folio date (top-left, e.g. "Tuesday · 29 April 2026")
-(function setFolio() {
-  const d = new Date();
-  const wk = d.toLocaleDateString('en-GB', { weekday: 'long' });
-  const dd = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-  document.getElementById('folio-date').textContent = `${wk} · ${dd}`;
-})();
-
-// ─────────────────────────────────────────────────────────────────
-// FORMATTERS
-// ─────────────────────────────────────────────────────────────────
 const fmtMcap = b => !b ? '—' : b >= 1000 ? `$${(b/1000).toFixed(2)}T` : `$${b}B`;
 const fmtPct  = p => p == null ? '—' : `+${p.toFixed(1)}%`;
 const fmtUpd  = iso => {
@@ -260,8 +233,17 @@ const fmtUpd  = iso => {
     hour: '2-digit', minute: '2-digit', hour12: false,
     timeZoneName: 'short'
   }).formatToParts(d).reduce((o,p) => (o[p.type]=p.value, o), {});
-  return `Filed ${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute} ${parts.timeZoneName}`;
+  return `Updated ${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute} ${parts.timeZoneName}`;
 };
+
+// ─── Theme toggle ─────────────────────────────────────────────────
+const themeToggle = document.getElementById('theme-toggle');
+themeToggle.addEventListener('click', () => {
+  const current = document.documentElement.getAttribute('data-theme') || 'light';
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('theme', next);
+});
 
 const sortState = {
   'fvb-green-table': {col:'mcap', dir:'desc'},
@@ -311,9 +293,18 @@ function sortRows(rows, col, dir, tableId) {
   return sorted;
 }
 
+function emptyState(message) {
+  return `<div class="empty">
+    <span class="empty-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="34" height="34"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 14s1.5-2 4-2 4 2 4 2" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="9" cy="10" r="0.9" fill="currentColor"/><circle cx="15" cy="10" r="0.9" fill="currentColor"/></svg>
+    </span>
+    <p>${message}</p>
+  </div>`;
+}
+
 function renderTable(rows, tableId) {
   if (!rows || rows.length === 0) {
-    return '<p class="empty">— No flips of note in this bucket. —</p>';
+    return emptyState('No flips in this bucket.');
   }
   const state = sortState[tableId];
   const sorted = sortRows(rows, state.col, state.dir, tableId);
@@ -333,12 +324,12 @@ function renderTable(rows, tableId) {
     return `<tr class="row-clickable" data-sym="${r.sym}">
     <td class="num col-idx">${i+1}</td>
     <td class="col-name">${r.name}</td>
-    <td><strong class="col-sym">${r.sym}</strong></td>
+    <td><strong class="sym">${r.sym}</strong></td>
     <td class="num col-mcap">${fmtMcap(r.mcap)}</td>
     <td class="num col-price"><span class="unit">$</span>${r.price.toFixed(2)}</td>
     <td class="num col-basis"><span class="unit">$</span>${r.basis.toFixed(2)}</td>
     <td class="num col-bxt">${r.bxt_today.toFixed(2)}</td>
-    <td class="num col-streak">${streak != null ? streak + '<span class="unit">' + (timeframe === 'weekly' ? 'w' : timeframe === 'monthly' ? 'mo' : 'd') + '</span>' : '<span class="unit">—</span>'}</td>
+    <td class="num col-streak">${streak != null ? streak + '<span class="unit">' + (timeframe === 'weekly' ? 'W' : timeframe === 'monthly' ? 'M' : 'd') + '</span>' : '<span class="unit">—</span>'}</td>
     <td class="num col-ath">${r.ath != null ? '<span class="unit">$</span>' + r.ath.toFixed(2) : '<span class="unit">—</span>'}</td>
     <td class="num col-pct">${fmtPct(r.pct_to_ath)}</td>
   </tr>`;
@@ -347,7 +338,7 @@ function renderTable(rows, tableId) {
 }
 
 // ─────────────────────────────────────────────────────────────────
-// Indicator math (mirrors scan.py)
+// Indicator math
 // ─────────────────────────────────────────────────────────────────
 function sma(arr, len) {
   const out = new Array(arr.length).fill(null);
@@ -394,6 +385,7 @@ function rsi(arr, len) {
   }
   return out;
 }
+
 function computeFVB(closes) {
   const basis = sma(closes, 20);
   const sd    = stdev(closes, 20);
@@ -401,6 +393,7 @@ function computeFVB(closes) {
   const lower = basis.map((b, i) => b == null ? null : b - 2 * sd[i]);
   return { basis, upper, lower };
 }
+
 function computeBXT(closes) {
   const e5  = ema(closes, 5);
   const e20 = ema(closes, 20);
@@ -417,10 +410,12 @@ function computeBXT(closes) {
   }
   return out;
 }
+
 function computeBXTLong(closes) {
   const r = rsi(closes, 15);
   return r.map(v => v != null ? v - 50 : null);
 }
+
 function wma(arr, len) {
   const out = new Array(arr.length).fill(null);
   for (let i = len - 1; i < arr.length; i++) {
@@ -437,22 +432,18 @@ function wma(arr, len) {
 }
 
 // ─────────────────────────────────────────────────────────────────
-// Chart rendering — pulls colors from CSS custom props so it
-// re-themes automatically with the toggle.
+// Chart rendering — keep dark in both themes (Apple Stocks does this)
 // ─────────────────────────────────────────────────────────────────
-function chartColors() {
-  const css = getComputedStyle(document.documentElement);
-  const v = name => css.getPropertyValue(name).trim();
-  return {
-    bg:     v('--chart-bg')     || '#14110f',
-    text:   v('--chart-text')   || '#cfc6b9',
-    grid:   v('--chart-grid')   || '#2a2522',
-    border: v('--chart-border') || '#3a342f',
-    bull:   v('--chart-bull')   || '#3f6b3a',
-    bear:   v('--chart-bear')   || '#8b1e1e',
-    basis:  v('--chart-basis')  || '#3b5a8a',
-  };
-}
+const TV_COLORS = {
+  bg:        '#131722',
+  text:      '#d1d4dc',
+  grid:      '#1e222d',
+  border:    '#2A2E39',
+  bull:      '#26a69a',
+  bear:      '#ef5350',
+  basis:     '#2962FF',
+  band:      '#787B86',
+};
 
 let openChartSym = null;
 
@@ -465,7 +456,6 @@ async function fetchBars(sym) {
 
 function renderChart(container, bars, sym) {
   container.innerHTML = '';
-  const TV = chartColors();
   const closes = bars.map(b => b.close);
   const { basis, upper, lower } = computeFVB(closes);
   const bxtShort = computeBXT(closes);
@@ -473,40 +463,38 @@ function renderChart(container, bars, sym) {
   const bxtShortSmooth = wma(bxtShort, 5);
   const bxtLongSmooth  = wma(bxtLong, 5);
 
-  // Figure header — TV-style OHLC strip restyled as editorial slug
   const last = bars[bars.length - 1];
   const prev = bars[bars.length - 2] || last;
   const ch = last.close - prev.close;
   const chPct = (ch / prev.close) * 100;
-  const chCol = ch >= 0 ? TV.bull : TV.bear;
+  const chCol = ch >= 0 ? TV_COLORS.bull : TV_COLORS.bear;
   const headBar = document.createElement('div');
   headBar.className = 'tv-header';
   headBar.innerHTML = `
     <span class="tv-sym">${sym}</span>
-    <span class="tv-tf">${timeframe === 'weekly' ? '1W' : timeframe === 'monthly' ? '1M' : '1D'}</span>
+    <span class="tv-tf">${timeframe === 'daily' ? '1D' : timeframe === 'weekly' ? '1W' : '1M'}</span>
     <span class="tv-ohlc"><span>O<b>${last.open.toFixed(2)}</b></span><span>H<b>${last.high.toFixed(2)}</b></span><span>L<b>${last.low.toFixed(2)}</b></span><span>C<b>${last.close.toFixed(2)}</b></span></span>
     <span class="tv-change" style="color:${chCol}">${ch >= 0 ? '+' : ''}${ch.toFixed(2)} (${ch >= 0 ? '+' : ''}${chPct.toFixed(2)}%)</span>
   `;
   container.appendChild(headBar);
 
-  // Price + FVB pane
   const priceWrap = document.createElement('div');
   priceWrap.style.cssText = 'height: 360px; width: 100%;';
   container.appendChild(priceWrap);
 
   const baseLayout = {
-    layout: { background: { color: TV.bg }, textColor: TV.text, fontSize: 11, fontFamily: 'ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace' },
-    grid: { vertLines: { color: TV.grid }, horzLines: { color: TV.grid } },
+    layout: { background: { color: TV_COLORS.bg }, textColor: TV_COLORS.text, fontSize: 11, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif' },
+    grid: { vertLines: { color: TV_COLORS.grid }, horzLines: { color: TV_COLORS.grid } },
     crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-    rightPriceScale: { borderColor: TV.border, scaleMargins: { top: 0.05, bottom: 0.25 } },
-    timeScale: { borderColor: TV.border, timeVisible: false, secondsVisible: false },
+    rightPriceScale: { borderColor: TV_COLORS.border, scaleMargins: { top: 0.05, bottom: 0.25 } },
+    timeScale: { borderColor: TV_COLORS.border, timeVisible: false, secondsVisible: false },
     watermark: { visible: false },
   };
 
   const priceChart = LightweightCharts.createChart(priceWrap, baseLayout);
 
-  const greenFill = getComputedStyle(document.documentElement).getPropertyValue('--chart-fvb-green-fill').trim() || 'rgba(63,107,58,0.32)';
-  const redFill   = getComputedStyle(document.documentElement).getPropertyValue('--chart-fvb-red-fill').trim()   || 'rgba(139,30,30,0.32)';
+  const greenFill = 'rgba(0,135,90,0.40)';
+  const redFill   = 'rgba(120,40,40,0.45)';
 
   const segments = [];
   let curr = null;
@@ -521,16 +509,19 @@ function renderChart(container, bars, sym) {
     curr.lower.push({ time: bars[i].time, value: lower[i] });
   }
 
+  const greenEdge = '#26a69a';
+  const redEdge   = '#ef5350';
+
   for (const seg of segments) {
     const fill = seg.type === 'bull' ? greenFill : redFill;
-    const edge = seg.type === 'bull' ? TV.bull : TV.bear;
+    const edge = seg.type === 'bull' ? greenEdge : redEdge;
     const u = priceChart.addAreaSeries({
       topColor: fill, bottomColor: fill, lineColor: 'rgba(0,0,0,0)', lineWidth: 0,
       priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false,
     });
     u.setData(seg.upper);
     const l = priceChart.addAreaSeries({
-      topColor: TV.bg, bottomColor: TV.bg, lineColor: 'rgba(0,0,0,0)', lineWidth: 0,
+      topColor: TV_COLORS.bg, bottomColor: TV_COLORS.bg, lineColor: 'rgba(0,0,0,0)', lineWidth: 0,
       priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false,
     });
     l.setData(seg.lower);
@@ -547,16 +538,16 @@ function renderChart(container, bars, sym) {
   }
 
   const basisLine = priceChart.addLineSeries({
-    color: TV.basis, lineWidth: 2,
-    priceLineVisible: true, priceLineColor: TV.basis, priceLineStyle: 2,
+    color: '#2962FF', lineWidth: 2,
+    priceLineVisible: true, priceLineColor: '#2962FF', priceLineStyle: 2,
     lastValueVisible: true, crosshairMarkerVisible: false,
   });
   basisLine.setData(bars.map((b, i) => basis[i] != null ? { time: b.time, value: basis[i] } : null).filter(Boolean));
 
   const candles = priceChart.addCandlestickSeries({
-    upColor: TV.bull, downColor: TV.bear,
-    borderUpColor: TV.bull, borderDownColor: TV.bear,
-    wickUpColor: TV.bull, wickDownColor: TV.bear,
+    upColor: TV_COLORS.bull, downColor: TV_COLORS.bear,
+    borderUpColor: TV_COLORS.bull, borderDownColor: TV_COLORS.bear,
+    wickUpColor: TV_COLORS.bull, wickDownColor: TV_COLORS.bear,
   });
   candles.setData(bars);
 
@@ -566,9 +557,9 @@ function renderChart(container, bars, sym) {
     const bullToday = bars[i].close > basis[i];
     const bullYest  = bars[i-1].close > basis[i-1];
     if (bullToday && !bullYest) {
-      markers.push({ time: bars[i].time, position: 'inBar', color: TV.bull, shape: 'circle', size: 1.2 });
+      markers.push({ time: bars[i].time, position: 'inBar', color: '#26a69a', shape: 'circle', size: 1.2 });
     } else if (!bullToday && bullYest) {
-      markers.push({ time: bars[i].time, position: 'inBar', color: TV.bear, shape: 'circle', size: 1.2 });
+      markers.push({ time: bars[i].time, position: 'inBar', color: '#ef5350', shape: 'circle', size: 1.2 });
     }
   }
   basisLine.setMarkers(markers);
@@ -581,18 +572,17 @@ function renderChart(container, bars, sym) {
   volSeries.priceScale().applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
   volSeries.setData(bars.map(b => ({
     time: b.time, value: b.volume || 0,
-    color: b.close >= b.open ? TV.bull + '99' : TV.bear + '99',
+    color: b.close >= b.open ? 'rgba(38,166,154,0.4)' : 'rgba(239,83,80,0.4)',
   })));
 
-  // BXT pane
   const bxtWrap = document.createElement('div');
   bxtWrap.style.cssText = 'height: 150px; width: 100%; margin-top: 1px;';
   container.appendChild(bxtWrap);
 
   const bxtChart = LightweightCharts.createChart(bxtWrap, {
     ...baseLayout,
-    rightPriceScale: { borderColor: TV.border, scaleMargins: { top: 0.1, bottom: 0.1 } },
-    watermark: { visible: true, color: TV.text + '66', text: 'B-Xtrender', fontSize: 14, horzAlign: 'left', vertAlign: 'top' },
+    rightPriceScale: { borderColor: TV_COLORS.border, scaleMargins: { top: 0.1, bottom: 0.1 } },
+    watermark: { visible: true, color: 'rgba(120,123,134,0.25)', text: 'B-Xtrender', fontSize: 14, horzAlign: 'left', vertAlign: 'top' },
   });
 
   const shortHist = bxtChart.addHistogramSeries({
@@ -600,17 +590,17 @@ function renderChart(container, bars, sym) {
   });
   shortHist.setData(bars.map((b, i) => bxtShort[i] != null ? {
     time: b.time, value: bxtShort[i],
-    color: bxtShort[i] >= 0 ? TV.bull : TV.bear,
+    color: bxtShort[i] >= 0 ? '#00C853' : '#B71C1C',
   } : null).filter(Boolean));
 
   const shortLine = bxtChart.addLineSeries({
-    color: TV.bull, lineWidth: 2,
+    color: '#00E676', lineWidth: 2,
     priceLineVisible: false, lastValueVisible: true,
   });
   shortLine.setData(bars.map((b, i) => bxtShortSmooth[i] != null ? { time: b.time, value: bxtShortSmooth[i] } : null).filter(Boolean));
 
   const longLine = bxtChart.addLineSeries({
-    color: TV.bear, lineWidth: 2,
+    color: '#FF5252', lineWidth: 2,
     priceLineVisible: false, lastValueVisible: true,
   });
   longLine.setData(bars.map((b, i) => bxtLongSmooth[i] != null ? { time: b.time, value: bxtLongSmooth[i] } : null).filter(Boolean));
@@ -620,9 +610,9 @@ function renderChart(container, bars, sym) {
     const a = bxtShortSmooth, b = bxtLongSmooth;
     if (a[i] == null || a[i-1] == null || b[i] == null || b[i-1] == null) continue;
     if (a[i-1] <= b[i-1] && a[i] > b[i]) {
-      xMarkers.push({ time: bars[i].time, position: 'belowBar', color: TV.bull, shape: 'circle' });
+      xMarkers.push({ time: bars[i].time, position: 'belowBar', color: TV_COLORS.bull, shape: 'circle' });
     } else if (a[i-1] >= b[i-1] && a[i] < b[i]) {
-      xMarkers.push({ time: bars[i].time, position: 'aboveBar', color: TV.bear, shape: 'circle' });
+      xMarkers.push({ time: bars[i].time, position: 'aboveBar', color: TV_COLORS.bear, shape: 'circle' });
     }
   }
   shortLine.setMarkers(xMarkers);
@@ -698,19 +688,19 @@ const resultsUrl = () => timeframe === 'daily' ? 'results.json' : `results_${tim
 const barsBaseUrl = () => timeframe === 'daily' ? 'bars' : `bars_${timeframe}`;
 
 function renderChanges(changes) {
-  if (!changes) return '<p class="empty">— No prior run to compare to. —</p>';
+  if (!changes) return emptyState('No prior run to compare to.');
   const buckets = [
-    {label: 'FVB · green',     items: changes.fvb_green_added,   action: 'added',   color: 'green'},
-    {label: 'FVB · green',     items: changes.fvb_green_removed, action: 'removed', color: 'green'},
-    {label: 'FVB · red',       items: changes.fvb_red_added,     action: 'added',   color: 'red'},
-    {label: 'FVB · red',       items: changes.fvb_red_removed,   action: 'removed', color: 'red'},
-    {label: 'BXT · green',     items: changes.bxt_green_added,   action: 'added',   color: 'green'},
-    {label: 'BXT · green',     items: changes.bxt_green_removed, action: 'removed', color: 'green'},
-    {label: 'BXT · red',       items: changes.bxt_red_added,     action: 'added',   color: 'red'},
-    {label: 'BXT · red',       items: changes.bxt_red_removed,   action: 'removed', color: 'red'},
+    {label: 'FVB Bullish · New',     items: changes.fvb_green_added,   action: 'added',   color: 'green'},
+    {label: 'FVB Bullish · Dropped', items: changes.fvb_green_removed, action: 'removed', color: 'green'},
+    {label: 'FVB Bearish · New',     items: changes.fvb_red_added,     action: 'added',   color: 'red'},
+    {label: 'FVB Bearish · Dropped', items: changes.fvb_red_removed,   action: 'removed', color: 'red'},
+    {label: 'BXT Bullish · New',     items: changes.bxt_green_added,   action: 'added',   color: 'green'},
+    {label: 'BXT Bullish · Dropped', items: changes.bxt_green_removed, action: 'removed', color: 'green'},
+    {label: 'BXT Bearish · New',     items: changes.bxt_red_added,     action: 'added',   color: 'red'},
+    {label: 'BXT Bearish · Dropped', items: changes.bxt_red_removed,   action: 'removed', color: 'red'},
   ];
   const total = buckets.reduce((s,b) => s + (b.items?.length || 0), 0);
-  if (total === 0) return '<p class="empty">— No changes since last refresh. —</p>';
+  if (total === 0) return emptyState('No changes since last refresh.');
   const head = `<table>
     <thead><tr>
       <th>Bucket</th><th>Action</th>
@@ -729,7 +719,7 @@ function renderChanges(changes) {
       <td class="col-bucket">${b.label}</td>
       <td><span class="badge badge-${b.color} badge-${b.action}">${b.action}</span></td>
       <td class="col-name">${item.name}</td>
-      <td><strong class="col-sym">${item.sym}</strong></td>
+      <td><strong class="sym">${item.sym}</strong></td>
       <td class="num col-mcap">${fmtMcap(item.mcap)}</td>
       <td class="num col-price">${usd(item.price)}</td>
       <td class="num col-basis">${usd(item.basis)}</td>
@@ -755,7 +745,7 @@ function renderAll() {
   const fg = filterRows(d.fvb_green), fr = filterRows(d.fvb_red);
   const bg = filterRows(d.bxt_green), br = filterRows(d.bxt_red);
   document.getElementById('stats').textContent =
-    `${d.scanned_count} scanned in ${d.scan_seconds}s · FVB ${fg.length}↑ / ${fr.length}↓ · BXT ${bg.length}↑ / ${br.length}↓`;
+    `${d.scanned_count} scanned in ${d.scan_seconds}s  ·  FVB ${fg.length} bull / ${fr.length} bear  ·  BXT ${bg.length} bull / ${br.length} bear`;
   const filteredChanges = { compared_to: d.changes.compared_to };
   for (const k of ['fvb_green_added','fvb_green_removed','fvb_red_added','fvb_red_removed','bxt_green_added','bxt_green_removed','bxt_red_added','bxt_red_removed']) {
     filteredChanges[k] = filterRows(d.changes[k]);
@@ -810,7 +800,7 @@ document.querySelectorAll('.tab-btn').forEach(b => {
     document.querySelectorAll('tr.chart-row').forEach(el => el.remove());
     openChartSym = null;
     currentData = null;
-    document.getElementById('updated').textContent = 'Loading...';
+    document.getElementById('updated').textContent = 'Loading…';
     load();
   });
 });
@@ -821,7 +811,6 @@ let articlesLoaded = false;
 
 function syncPrimaryNav() {
   document.querySelectorAll('.primary-nav-btn').forEach(b => {
-    if (!b.dataset.view) return;
     b.classList.toggle('active', b.dataset.view === activeView);
   });
   document.getElementById('scanner-view').hidden  = (activeView !== 'scanner');
@@ -829,7 +818,6 @@ function syncPrimaryNav() {
   if (activeView === 'articles' && !articlesLoaded) loadArticles();
 }
 document.querySelectorAll('.primary-nav-btn').forEach(b => {
-  if (!b.dataset.view) return; // skip the external-link <a>
   b.addEventListener('click', () => {
     if (b.dataset.view === activeView) return;
     activeView = b.dataset.view;
@@ -838,7 +826,6 @@ document.querySelectorAll('.primary-nav-btn').forEach(b => {
   });
 });
 
-// Tiny inline markdown renderer
 function renderMD(md) {
   const lines = md.split('\n');
   let html = '', inList = false;
@@ -846,7 +833,7 @@ function renderMD(md) {
     const line = raw.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
                      .replace(/\*([^*]+)\*/g, '<em>$1</em>')
                      .replace(/`([^`]+)`/g, '<code>$1</code>');
-    if (/^---/.test(line.trim())) { if (inList) { html += '</ul>'; inList = false; } html += '<hr class="rule-thin">'; continue; }
+    if (/^---/.test(line.trim())) { if (inList) { html += '</ul>'; inList = false; } html += '<hr>'; continue; }
     if (/^## /.test(line))         { if (inList) { html += '</ul>'; inList = false; } html += `<h3>${line.slice(3)}</h3>`; continue; }
     if (/^- /.test(line))          { if (!inList) { html += '<ul>'; inList = true; } html += `<li>${line.slice(2)}</li>`; continue; }
     if (line.trim() === '')        { if (inList) { html += '</ul>'; inList = false; } continue; }
@@ -857,16 +844,6 @@ function renderMD(md) {
   return html;
 }
 
-function readingTime(md) {
-  const words = (md || '').trim().split(/\s+/).length;
-  return Math.max(1, Math.round(words / 220));
-}
-
-function fmtArticleDate(iso) {
-  const d = new Date(iso + 'T00:00:00Z');
-  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
-}
-
 async function loadArticles() {
   try {
     const res = await fetch('../../articles.json?t=' + Date.now());
@@ -874,25 +851,16 @@ async function loadArticles() {
     const articles = (data.articles || []).slice().sort((a, b) => b.date.localeCompare(a.date));
     document.getElementById('articles-count').textContent = articles.length;
     const container = document.getElementById('articles-list');
-    container.innerHTML = articles.map((a, i) => `
-      <article class="article-card" data-id="${a.id}">
+    container.innerHTML = articles.map(a => `
+      <article class="article-card card" data-id="${a.id}">
         <div class="article-meta">
-          <span class="article-issue">No.&nbsp;${String(articles.length - i).padStart(3,'0')}</span>
-          <span class="article-dot">·</span>
-          <span class="article-date">${fmtArticleDate(a.date)}</span>
-          <span class="article-dot">·</span>
-          <span class="article-read">${readingTime(a.body)}&nbsp;min&nbsp;read</span>
-          ${(a.tags || []).length ? '<span class="article-dot">·</span>' : ''}
+          <span class="article-date">${a.date}</span>
           ${(a.tags || []).map(t => `<span class="article-tag">${t}</span>`).join('')}
         </div>
         <h3 class="article-title">${a.title}</h3>
-        <p class="article-summary"><span class="dropcap-sm">${(a.summary || '').charAt(0)}</span>${(a.summary || '').slice(1)}</p>
-        <div class="article-byline">
-          <span class="article-byline-rule" aria-hidden="true"></span>
-          <span class="article-byline-text">By&nbsp;<em>The Operator</em></span>
-        </div>
+        <p class="article-summary">${a.summary || ''}</p>
         <div class="article-body" hidden>${renderMD(a.body)}</div>
-        <button class="article-toggle" type="button">Continue reading <span class="art-arrow">→</span></button>
+        <button class="article-toggle" type="button">Read</button>
       </article>
     `).join('');
     container.querySelectorAll('.article-toggle').forEach(btn => {
@@ -901,13 +869,13 @@ async function loadArticles() {
         const body = card.querySelector('.article-body');
         const open = !body.hidden;
         body.hidden = open;
-        btn.innerHTML = open ? 'Continue reading <span class="art-arrow">→</span>' : 'Close article <span class="art-arrow">↑</span>';
+        btn.textContent = open ? 'Read' : 'Close';
         card.classList.toggle('expanded', !open);
       });
     });
     articlesLoaded = true;
   } catch (e) {
-    document.getElementById('articles-list').innerHTML = '<p class="empty">— Couldn\'t load articles. Check articles.json exists. —</p>';
+    document.getElementById('articles-list').innerHTML = emptyState("Couldn't load articles. Check articles.json exists.");
   }
 }
 
