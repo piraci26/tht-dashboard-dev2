@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>THT Dual Scan — Design Concepts</title>
+<style>
+  :root {
+    --bg: #0a0a0a; --fg: #e8e8e8; --dim: #888; --line: #222;
+    --green: #00ffbb; --red: #ff4040; --table-bg: #111;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    padding: 48px 24px; max-width: 1200px; margin: 0 auto;
+    font-size: 14px; line-height: 1.55;
+  }
+  header { margin-bottom: 48px; }
+  h1 {
+    font-size: 32px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 12px;
+  }
+  .lead {
+    color: var(--dim); font-size: 15px; max-width: 640px; line-height: 1.7;
+  }
+  .lead a { color: var(--green); text-decoration: none; }
+  .lead a:hover { text-decoration: underline; }
+
+  .grid {
+    display: grid; gap: 24px;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  }
+  .concept {
+    background: var(--table-bg); border: 1px solid var(--line);
+    border-radius: 8px; padding: 28px 26px;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+    text-decoration: none; color: inherit;
+    display: flex; flex-direction: column; min-height: 280px;
+  }
+  .concept:hover {
+    transform: translateY(-2px);
+    border-color: var(--green);
+  }
+  .concept .num {
+    font-family: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--dim); margin-bottom: 12px;
+  }
+  .concept h2 {
+    font-size: 22px; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 10px;
+  }
+  .concept .school {
+    font-family: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+    font-size: 11px; color: var(--green); letter-spacing: 0.06em;
+    text-transform: uppercase; margin-bottom: 14px;
+  }
+  .concept p {
+    color: #b8b8b8; font-size: 13.5px; line-height: 1.65; margin-bottom: 18px;
+  }
+  .concept .refs {
+    margin-top: auto;
+    color: var(--dim); font-size: 11.5px; letter-spacing: 0.02em;
+    border-top: 1px solid var(--line); padding-top: 14px;
+  }
+  .concept .refs strong { color: #b8b8b8; font-weight: 500; }
+  .concept .cta {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--green); font-weight: 600; font-size: 13px;
+    margin-top: 14px;
+  }
+  .concept .cta .arrow { transition: transform 0.15s ease; }
+  .concept:hover .cta .arrow { transform: translateX(3px); }
+
+  footer {
+    margin-top: 56px; padding-top: 24px;
+    border-top: 1px solid var(--line);
+    color: var(--dim); font-size: 12px;
+  }
+  footer a { color: var(--green); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<header>
+  <h1>THT Dual Scan — Design Concepts</h1>
+  <p class="lead">Three opinionated redesigns commissioned in parallel from the design team. Each took a different research lane (editorial publication / institutional terminal / premium consumer finance), built a complete light + dark theme system, and implemented all functionality. Click any concept to preview the live build.</p>
+  <p class="lead" style="margin-top:14px;">Current dev2 baseline lives at <a href="../">/tht-dashboard-dev2/</a>. Production at <a href="https://piraci26.github.io/tht-dashboard/">/tht-dashboard/</a>.</p>
+</header>
+
+<div class="grid">
+
+  <a class="concept" href="editorial/">
+    <div class="num">No. 01</div>
+    <div class="school">Editorial · Publication</div>
+    <h2>The Dual Scan, A Quant Bulletin</h2>
+    <p>Treats the dashboard as a serious financial broadsheet that happens to host live tables. Serif headlines, drop caps, italic kickers, fleuron section breaks, byline-style metadata. A faded-crimson editorial accent.</p>
+    <span class="cta">Open preview <span class="arrow">→</span></span>
+    <div class="refs"><strong>Refs:</strong> Stratechery · Doomberg · Lenny's · Bloomberg Opinion · Every</div>
+  </a>
+
+  <a class="concept" href="terminal/">
+    <div class="num">No. 02</div>
+    <div class="school">Terminal · Institutional</div>
+    <h2>Trading-desk density, modernised</h2>
+    <p>Maximum information density without ugliness. Status row at top with live counts, hairline borders, monospace numerics, color-coded data signals, sticky header, sparkline chips. ~38 rows visible per screen at 1080p.</p>
+    <span class="cta">Open preview <span class="arrow">→</span></span>
+    <div class="refs"><strong>Refs:</strong> Bloomberg Terminal · Koyfin · Linear · Vercel · TradingView Pro</div>
+  </a>
+
+  <a class="concept" href="spatial/">
+    <div class="num">No. 03</div>
+    <div class="school">Spatial · Premium consumer</div>
+    <h2>Approachable for the sophisticated</h2>
+    <p>Generous whitespace, soft shadows, layered cards, considered hierarchy. Warm-cream paper canvas in light, near-black warm dark in night mode. Brand teal accent. The kind of tool a sophisticated client would happily pay $50/mo for.</p>
+    <span class="cta">Open preview <span class="arrow">→</span></span>
+    <div class="refs"><strong>Refs:</strong> Stripe Atlas · Wealthsimple · Notion · Figma · Shopify Polaris</div>
+  </a>
+
+</div>
+
+<footer>
+  <p>← <a href="../">Back to dev2 baseline</a> &middot; Each variant has light/dark toggle (top-right). All three read live data from production scan. <a href="https://piraci26.github.io/tht-dashboard/">Visit production →</a></p>
+</footer>
+</body>
+</html>
