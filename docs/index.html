@@ -6,131 +6,933 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>[DEV2] THT Dual Scan — S&P 500</title>
+<title>THT Dual Scan — Live regime flips for technical traders</title>
+<meta name="description" content="Daily, weekly and monthly THT Fair Value Band and B-Xtrender flips across 1,500+ US equities. Live scanner, expandable charts, research articles.">
 <link rel="stylesheet" href="style.css">
 <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 
-<!-- ─────────── ANALYTICS (test integration) ───────────
-     Both providers below are privacy-friendly, cookieless, GDPR-safe.
-     Until you sign up and replace the placeholders, no data is collected.
-     Sign-up steps below each block. -->
-
-<!-- Plausible Analytics ($9/mo, polished dashboard, goal tracking)
-     1. Sign up at https://plausible.io/register
-     2. Add site → enter "piraci26.github.io/tht-dashboard-dev2"
-     3. Replace data-domain below with the exact domain Plausible assigns
-     4. Hard reload — visits start showing in your dashboard within seconds -->
+<!-- Plausible Analytics -->
 <script defer data-domain="piraci26.github.io/tht-dashboard-dev2"
         src="https://plausible.io/js/script.js"></script>
-
-<!-- GoatCounter (free for personal use, lightweight, cookieless)
-     1. Sign up at https://www.goatcounter.com/signup
-     2. Pick a code (subdomain) — e.g. "tht-dual-scan"
-     3. Replace YOUR_CODE below with that code
-     4. Hard reload — visits show up at https://YOUR_CODE.goatcounter.com -->
+<!-- GoatCounter -->
 <script data-goatcounter="https://jakubkaszynski.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
+
+<script>
+// Theme: default to prefers-color-scheme, persist override in localStorage.
+(function(){
+  try {
+    var stored = localStorage.getItem('theme');
+    var prefers = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var dark = stored ? stored === 'dark' : prefers;
+    if (dark) document.documentElement.classList.add('dark');
+  } catch(_) {}
+})();
+</script>
 </head>
 <body>
-<header>
-<div class="brand-row">
-  <div class="brand">
-    <span class="brand-glyph" aria-hidden="true">
-      <svg viewBox="0 0 24 24" width="22" height="22" xmlns="http://www.w3.org/2000/svg">
-        <rect x="1.5" y="1.5" width="21" height="21" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
-        <path d="M2 22 L22 2" stroke="currentColor" stroke-width="1.5"/>
-        <circle cx="7" cy="17" r="2.2" fill="currentColor"/>
-        <circle cx="17" cy="7" r="2.2" fill="currentColor" opacity="0.55"/>
-      </svg>
-    </span>
-    <h1>
-      <span class="brand-mark">THT</span><span class="brand-sep">/</span><span class="brand-sub">Dual&nbsp;Scan</span>
-      <span class="dev-badge" style="background:#9333ea;">DEV2</span>
-    </h1>
-  </div>
-  <div class="meta">
-    <span class="pulse" aria-hidden="true"></span>
-    <span id="updated">Loading…</span>
-    <span class="separator">·</span>
-    <span id="stats">—</span>
-    <span class="separator">·</span>
-    <a class="version-toggle" href="https://piraci26.github.io/tht-dashboard/"><span class="arrow">←</span> Current version</a>
-  </div>
-</div>
-<nav class="primary-nav" role="tablist" aria-label="Section">
-  <button class="primary-nav-btn active" data-view="scanner">Scanner</button>
-  <button class="primary-nav-btn" data-view="articles">Articles <span class="nav-count" id="articles-count">·</span></button>
-</nav>
-<p class="subtitle">Daily, weekly &amp; monthly flips on <strong>THT Fair Value Bands</strong> and <strong>B-Xtrender</strong> across 1,500+ US equities. Click any row to expand the chart.</p>
-<div class="controls">
-  <div class="control-block">
-    <span class="control-label">Timeframe</span>
-    <div class="tab-row" role="tablist" aria-label="Timeframe">
-      <button class="tab-btn active" data-tf="daily" role="tab">Daily</button>
-      <button class="tab-btn" data-tf="weekly" role="tab">Weekly</button>
-      <button class="tab-btn" data-tf="monthly" role="tab">Monthly</button>
+
+<!-- ════════════════════════════════════════════════════════════════
+     SITE HEADER (sticky top bar)
+     ════════════════════════════════════════════════════════════════ -->
+<header class="site-header">
+  <div class="site-header-inner">
+    <a href="#" class="brand-link" aria-label="THT Dual Scan home">
+      <span class="brand-glyph" aria-hidden="true"></span>
+      <span class="brand-name">THT&nbsp;DUAL&nbsp;SCAN</span>
+      <span class="brand-dev-tag">DEV2</span>
+    </a>
+    <nav class="site-nav" aria-label="Primary">
+      <a href="#scanner">Scanner</a>
+      <a href="#track">Track Record</a>
+      <a href="#methodology">Methodology</a>
+      <a href="#articles">Articles</a>
+      <a href="https://piraci26.github.io/tht-dashboard/">Production</a>
+    </nav>
+    <div class="header-actions">
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/>
+          <path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+      <a href="#scanner" class="cta-filled">
+        Open Scanner
+        <span class="arrow">→</span>
+      </a>
     </div>
   </div>
-  <div class="control-block filter-row">
-    <label class="control-label" for="mcap-filter">Min Mkt Cap</label>
-    <div class="filter-input-group">
-      <span class="filter-prefix">$</span>
-      <input id="mcap-filter" type="number" step="0.1" min="0" placeholder="3.5">
-      <span class="filter-suffix">B+</span>
-    </div>
-    <div class="filter-presets" role="group" aria-label="Market-cap presets">
-      <button type="button" data-mcap="3.5">3.5B</button>
-      <button type="button" data-mcap="10">10B</button>
-      <button type="button" data-mcap="50">50B</button>
-      <button type="button" data-mcap="200">200B</button>
-      <button type="button" data-mcap="1000">1T</button>
-    </div>
-  </div>
-</div>
 </header>
 
-<main>
-<div id="scanner-view">
-<section class="changes">
-<h2><span class="dot dot-changes"></span>Changes since last 5-min refresh</h2>
-<div id="changes-table" class="table-wrap"></div>
-</section>
-
-<section class="green">
-<h2><span class="dot dot-green"></span>THT Fair Value Bands flipped GREEN today</h2>
-<div id="fvb-green-table" class="table-wrap"></div>
-</section>
-
-<section class="red">
-<h2><span class="dot dot-red"></span>THT Fair Value Bands flipped RED today</h2>
-<div id="fvb-red-table" class="table-wrap"></div>
-</section>
-
-<section class="green">
-<h2><span class="dot dot-green"></span>B-Xtrender flipped GREEN today</h2>
-<div id="bxt-green-table" class="table-wrap"></div>
-</section>
-
-<section class="red">
-<h2><span class="dot dot-red"></span>B-Xtrender flipped RED today</h2>
-<div id="bxt-red-table" class="table-wrap"></div>
-</section>
+<!-- ════════════════════════════════════════════════════════════════
+     TICKER TAPE
+     ════════════════════════════════════════════════════════════════ -->
+<div class="ticker-tape" aria-hidden="true">
+  <div class="ticker-track" id="ticker-track"></div>
 </div>
 
-<div id="articles-view" hidden>
-  <section class="articles">
-    <h2 class="articles-h2">Inferences <span class="articles-h2-sub">— what today's tape might be saying</span></h2>
-    <p class="articles-disclaimer">Educational observations only — <strong>not investment advice</strong>. The author/operator is not a registered investment adviser. Patterns described here may or may not predict future market behaviour.</p>
-    <div id="articles-list"></div>
-  </section>
-</div>
-</main>
+<!-- ════════════════════════════════════════════════════════════════
+     HERO
+     ════════════════════════════════════════════════════════════════ -->
+<section class="hero">
+  <!-- Backdrop SVG (fair value band charts + scan beam, behind hero) -->
+  <div class="hero-backdrop" id="hero-backdrop">
+    <div class="grid-bg"></div>
+    <div class="fade-left"></div>
+    <div class="fade-bottom"></div>
+  </div>
 
-<footer>
-<p>Auto-refreshes every 30 seconds. Yahoo Finance daily OHLCV. Indicator math from open-source Pine.</p>
+  <div class="hero-inner">
+    <div class="hero-grid">
+      <div>
+        <div class="live-badge">
+          <span class="live-dot"></span>
+          Live · 1,500+ US equities · Daily, weekly &amp; monthly bands
+        </div>
+        <h1 class="hero-headline">
+          Live regime flips,<br>
+          <span class="muted">delivered the moment they print.</span>
+        </h1>
+        <p class="hero-lede">
+          THT Dual Scan tracks fair value bands and B-Xtrender momentum across
+          1,500+ US equities and surfaces the precise bar where each name flips
+          regime. Click any row to open a TradingView-grade chart.
+        </p>
+        <div class="hero-actions">
+          <a href="#scanner" class="cta-filled-lg">
+            Open Scanner
+            <span class="arrow">→</span>
+          </a>
+          <a href="#articles" class="cta-outline">Sample brief</a>
+          <span class="note">Auto-refresh · 30s · No login</span>
+        </div>
+      </div>
+
+      <!-- Equity panel (right column) -->
+      <div class="equity-panel">
+        <div class="equity-panel-head">
+          <div class="label">
+            <span class="live-dot"></span>
+            Today · Composite signal strength
+          </div>
+          <div class="tabs">
+            <span class="seg" data-eq="30">30D</span>
+            <span class="seg active" data-eq="90">90D</span>
+            <span class="seg" data-eq="all">ALL</span>
+          </div>
+        </div>
+        <div class="equity-panel-body">
+          <canvas id="hero-equity-canvas" width="640" height="260"></canvas>
+        </div>
+        <div class="equity-panel-stats">
+          <div>
+            <div class="k">FVB Green</div>
+            <div class="v text-up" id="es-fvb-g">—</div>
+          </div>
+          <div>
+            <div class="k">FVB Red</div>
+            <div class="v text-down" id="es-fvb-r">—</div>
+          </div>
+          <div>
+            <div class="k">BXT Green</div>
+            <div class="v text-up" id="es-bxt-g">—</div>
+          </div>
+          <div>
+            <div class="k">BXT Red</div>
+            <div class="v text-down" id="es-bxt-r">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════
+     01 · SCANNER  (the live scanner — all five tables)
+     ════════════════════════════════════════════════════════════════ -->
+<section class="section" id="scanner">
+  <div class="section-inner">
+    <div class="section-label">
+      <span class="num">01</span>
+      <span class="hairline"></span>
+      <span>Scanner</span>
+    </div>
+    <div class="section-headrow">
+      <h2 class="section-title">Four signals. One terminal.</h2>
+      <div class="section-meta">
+        Last update · <span class="val" id="updated">Loading…</span>
+      </div>
+    </div>
+
+    <!-- 4 instrument-style cards with live counts from currentData -->
+    <div class="card-grid" id="signal-cards">
+      <div class="card">
+        <div class="card-head">
+          <span class="num">FVB · G</span>
+          <span class="status" id="card-fvb-g-status">Active</span>
+        </div>
+        <h3>FVB flipped GREEN</h3>
+        <p>THT Fair Value Band closed above its 20-bar basis after a confirmed bear streak. Bullish regime initiated.</p>
+        <div class="card-meta">
+          <div class="row"><span>Today</span><span class="v up" id="card-fvb-g-count">—</span></div>
+          <div class="row"><span>Avg streak</span><span class="v" id="card-fvb-g-streak">—</span></div>
+          <div class="row"><span>Top mcap</span><span class="v" id="card-fvb-g-top">—</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <span class="num">FVB · R</span>
+          <span class="status down" id="card-fvb-r-status">Active</span>
+        </div>
+        <h3>FVB flipped RED</h3>
+        <p>Price closed back below the basis after a sustained bull regime. Bearish regime initiated.</p>
+        <div class="card-meta">
+          <div class="row"><span>Today</span><span class="v down" id="card-fvb-r-count">—</span></div>
+          <div class="row"><span>Avg streak</span><span class="v" id="card-fvb-r-streak">—</span></div>
+          <div class="row"><span>Top mcap</span><span class="v" id="card-fvb-r-top">—</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <span class="num">BXT · G</span>
+          <span class="status" id="card-bxt-g-status">Active</span>
+        </div>
+        <h3>B-Xtrender flipped GREEN</h3>
+        <p>RSI of the EMA(5)−EMA(20) differential crossed back above zero — momentum acceleration turning positive.</p>
+        <div class="card-meta">
+          <div class="row"><span>Today</span><span class="v up" id="card-bxt-g-count">—</span></div>
+          <div class="row"><span>Avg streak</span><span class="v" id="card-bxt-g-streak">—</span></div>
+          <div class="row"><span>Top mcap</span><span class="v" id="card-bxt-g-top">—</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <span class="num">BXT · R</span>
+          <span class="status down" id="card-bxt-r-status">Active</span>
+        </div>
+        <h3>B-Xtrender flipped RED</h3>
+        <p>BXT crossed below zero — second derivative of trend turning down. Often precedes FVB regime change.</p>
+        <div class="card-meta">
+          <div class="row"><span>Today</span><span class="v down" id="card-bxt-r-count">—</span></div>
+          <div class="row"><span>Avg streak</span><span class="v" id="card-bxt-r-streak">—</span></div>
+          <div class="row"><span>Top mcap</span><span class="v" id="card-bxt-r-top">—</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scanner controls (TF tabs + mcap filter) -->
+    <div class="scanner-controls">
+      <div class="control-block">
+        <span class="control-label">Timeframe</span>
+        <div class="tab-row" role="tablist" aria-label="Timeframe">
+          <button class="tab-btn active" data-tf="daily" role="tab">Daily</button>
+          <button class="tab-btn" data-tf="weekly" role="tab">Weekly</button>
+          <button class="tab-btn" data-tf="monthly" role="tab">Monthly</button>
+        </div>
+      </div>
+      <div class="control-block">
+        <span class="control-label">Min Mkt Cap</span>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div class="filter-input-group">
+            <span class="filter-prefix">$</span>
+            <input id="mcap-filter" type="number" step="0.1" min="0" placeholder="3.5">
+            <span class="filter-suffix">B+</span>
+          </div>
+          <div class="filter-presets" role="group" aria-label="Market-cap presets">
+            <button type="button" data-mcap="3.5">3.5B</button>
+            <button type="button" data-mcap="10">10B</button>
+            <button type="button" data-mcap="50">50B</button>
+            <button type="button" data-mcap="200">200B</button>
+            <button type="button" data-mcap="1000">1T</button>
+          </div>
+        </div>
+      </div>
+      <div class="control-block">
+        <span class="control-label">View</span>
+        <nav class="primary-nav" role="tablist" aria-label="Section">
+          <button class="primary-nav-btn active" data-view="scanner">Scanner</button>
+          <button class="primary-nav-btn" data-view="articles">Articles <span class="nav-count" id="articles-count">·</span></button>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Status row -->
+    <div class="scanner-status">
+      <span class="pulse" aria-hidden="true"></span>
+      <span class="stats-text" id="stats">—</span>
+      <span class="sep">·</span>
+      <a href="https://piraci26.github.io/tht-dashboard/">Production version →</a>
+    </div>
+
+    <!-- ─── SCANNER VIEW ─── -->
+    <div id="scanner-view">
+      <section class="scanner-section">
+        <h2><span class="dot dot-changes"></span>Changes since last 5-min refresh</h2>
+        <div id="changes-table" class="table-wrap"></div>
+      </section>
+
+      <section class="scanner-section">
+        <h2><span class="dot dot-green"></span>THT Fair Value Bands flipped GREEN today</h2>
+        <div id="fvb-green-table" class="table-wrap"></div>
+      </section>
+
+      <section class="scanner-section">
+        <h2><span class="dot dot-red"></span>THT Fair Value Bands flipped RED today</h2>
+        <div id="fvb-red-table" class="table-wrap"></div>
+      </section>
+
+      <section class="scanner-section">
+        <h2><span class="dot dot-green"></span>B-Xtrender flipped GREEN today</h2>
+        <div id="bxt-green-table" class="table-wrap"></div>
+      </section>
+
+      <section class="scanner-section">
+        <h2><span class="dot dot-red"></span>B-Xtrender flipped RED today</h2>
+        <div id="bxt-red-table" class="table-wrap"></div>
+      </section>
+    </div>
+
+    <!-- ─── ARTICLES VIEW (toggled in place of scanner-view) ─── -->
+    <div id="articles-view" hidden>
+      <section class="articles-section">
+        <h2 class="articles-h2">Inferences <span class="articles-h2-sub">— what today's tape might be saying</span></h2>
+        <p class="articles-disclaimer">Educational observations only — <strong>not investment advice</strong>. The author/operator is not a registered investment adviser. Patterns described here may or may not predict future market behaviour.</p>
+        <div id="articles-list"></div>
+      </section>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════
+     02 · TRACK RECORD  (live counts, equity curve, heatmap)
+     ════════════════════════════════════════════════════════════════ -->
+<section class="section alt" id="track">
+  <div class="section-inner">
+    <div class="section-label">
+      <span class="num">02</span>
+      <span class="hairline"></span>
+      <span>Live tape</span>
+    </div>
+    <div class="section-headrow">
+      <h2 class="section-title">Auto-updating. Verifiable. Same scan, every five minutes.</h2>
+      <div class="section-meta">
+        Universe · <span class="val" id="track-universe">—</span>
+      </div>
+    </div>
+
+    <div class="stats-grid" id="track-stats">
+      <div class="stat">
+        <div class="k">Scanned today</div>
+        <div class="v" id="track-scanned">—</div>
+        <div class="sub" id="track-scan-secs">—</div>
+      </div>
+      <div class="stat">
+        <div class="k">Composite green</div>
+        <div class="v text-up" id="track-green">—</div>
+        <div class="sub">FVB·G + BXT·G</div>
+      </div>
+      <div class="stat">
+        <div class="k">Composite red</div>
+        <div class="v text-down" id="track-red">—</div>
+        <div class="sub">FVB·R + BXT·R</div>
+      </div>
+      <div class="stat">
+        <div class="k">Net regime</div>
+        <div class="v" id="track-net">—</div>
+        <div class="sub" id="track-net-sub">green − red</div>
+      </div>
+    </div>
+
+    <div class="track-split">
+      <div class="panel">
+        <div class="panel-head">
+          <span>Today's flip count distribution · Composite</span>
+          <span class="v up" id="panel-flip-total">—</span>
+        </div>
+        <div class="panel-body">
+          <canvas id="track-equity-canvas" width="760" height="280"></canvas>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <span>Today · Signal heatmap</span>
+          <span class="v muted" id="heatmap-meta">—</span>
+        </div>
+        <div class="panel-body">
+          <div class="heatmap-grid" id="heatmap-grid"></div>
+        </div>
+        <div class="heatmap-legend">
+          <span><span class="swatch up"></span>Long flip</span>
+          <span><span class="swatch down"></span>Short flip</span>
+          <span><span class="swatch neutral"></span>Neutral</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════
+     03 · METHODOLOGY  (3-step grid)
+     ════════════════════════════════════════════════════════════════ -->
+<section class="section" id="methodology">
+  <div class="section-inner">
+    <div class="section-label">
+      <span class="num">03</span>
+      <span class="hairline"></span>
+      <span>Methodology</span>
+    </div>
+    <h2 class="section-title">How a flip is generated.</h2>
+
+    <div class="method-grid">
+      <div class="method-step">
+        <div class="k">Step 01</div>
+        <h3>THT Fair Value Band</h3>
+        <p>For each ticker we compute a 20-bar simple-moving-average basis and a ±2σ envelope. A regime flip is recorded the bar a close crosses the basis — green when close &gt; basis, red when close &lt; basis. Pure price math, no parameters per name.</p>
+        <div class="meta">basis = SMA(close, 20) · σ = stdev(close, 20) · bands = basis ± 2σ</div>
+      </div>
+      <div class="method-step">
+        <div class="k">Step 02</div>
+        <h3>B-Xtrender momentum</h3>
+        <p>BXT measures the rate-of-change of trend by taking RSI(15) of the EMA(5) − EMA(20) differential, centred on zero. A second-derivative momentum oscillator: it flips before price often does.</p>
+        <div class="meta">bxt = RSI(EMA(5,c) − EMA(20,c), 15) − 50 · centred zero</div>
+      </div>
+      <div class="method-step">
+        <div class="k">Step 03</div>
+        <h3>Multi-timeframe scan</h3>
+        <p>Both indicators are computed independently on daily, weekly and monthly bars. Universe is 1,500+ US equities, EOD OHLCV from Yahoo Finance, refreshed every five minutes. Streak column shows how long the prior regime held before today's flip.</p>
+        <div class="meta">1D / 1W / 1M · 1,500+ tickers · refresh 5min · streak in bars</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════
+     04 · ARTICLES  (latest article preview, brief-style frame)
+     ════════════════════════════════════════════════════════════════ -->
+<section class="section alt" id="articles">
+  <div class="section-inner">
+    <div class="section-label">
+      <span class="num">04</span>
+      <span class="hairline"></span>
+      <span>Articles</span>
+    </div>
+    <div class="section-headrow">
+      <h2 class="section-title">Inferences from the tape — long-form, twice a week.</h2>
+      <a href="#" id="open-articles-link" class="section-meta" style="border-bottom:1px solid var(--border); padding-bottom:2px;">
+        See all articles →
+      </a>
+    </div>
+
+    <div class="brief-frame" id="latest-brief-frame">
+      <div class="brief-frame-head">
+        <span id="brief-filename">flip-brief_loading.md</span>
+        <span id="brief-page">Page 1 / —</span>
+      </div>
+      <div class="brief-grid">
+        <div class="brief-left">
+          <div class="brief-eyebrow">THT Dual Scan · Inference</div>
+          <div class="brief-stamp" id="brief-stamp">Loading latest…</div>
+          <h3 class="brief-headline" id="brief-headline">Loading latest article…</h3>
+          <p class="brief-body" id="brief-summary"></p>
+          <div class="brief-mini-grid">
+            <div>
+              <div class="k">FVB · G</div>
+              <div class="v text-up" id="brief-stat-fg">—</div>
+            </div>
+            <div>
+              <div class="k">FVB · R</div>
+              <div class="v text-down" id="brief-stat-fr">—</div>
+            </div>
+            <div>
+              <div class="k">Top mcap</div>
+              <div class="v" id="brief-stat-top">—</div>
+            </div>
+          </div>
+        </div>
+        <div class="brief-right">
+          <div class="brief-table-label">Top 5 ranked flips · today</div>
+          <table class="brief-table">
+            <thead>
+              <tr>
+                <th>Sym</th>
+                <th>Side</th>
+                <th class="r">Mkt Cap</th>
+                <th class="r">BXT</th>
+                <th class="r">% to ATH</th>
+              </tr>
+            </thead>
+            <tbody id="brief-table-body">
+              <tr><td colspan="5" style="opacity:0.5; padding:24px 4px; text-align:center;">Loading…</td></tr>
+            </tbody>
+          </table>
+          <div class="brief-footer" id="brief-footer">
+            + open the Articles tab for the full archive
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════
+     FOOTER
+     ════════════════════════════════════════════════════════════════ -->
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="brand-link">
+          <span class="brand-glyph"></span>
+          <span class="brand-name">THT&nbsp;DUAL&nbsp;SCAN</span>
+        </div>
+        <div class="tagline">Fair value &amp; momentum regime scanner</div>
+      </div>
+      <div class="footer-cols">
+        <div class="col">
+          <h4>Product</h4>
+          <ul>
+            <li><a href="#scanner">Scanner</a></li>
+            <li><a href="#track">Track Record</a></li>
+            <li><a href="#articles">Articles</a></li>
+          </ul>
+        </div>
+        <div class="col">
+          <h4>Methodology</h4>
+          <ul>
+            <li><a href="#methodology">FVB</a></li>
+            <li><a href="#methodology">B-Xtrender</a></li>
+            <li><a href="#methodology">Streak math</a></li>
+          </ul>
+        </div>
+        <div class="col">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="#disclaimer">Disclaimer</a></li>
+            <li><a href="https://piraci26.github.io/tht-dashboard/">Production</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-disclaimer" id="disclaimer">
+      <div class="dis-label">Disclaimer</div>
+      <p>
+        Educational observations only — <strong>not investment advice</strong>.
+        The author/operator is not a registered investment adviser. Patterns
+        described here may or may not predict future market behaviour. Auto-refreshes
+        every 30 seconds. EOD OHLCV from Yahoo Finance. Indicator math from open-source Pine.
+      </p>
+      <div class="footer-bottom">
+        <span>© 2026 THT Dual Scan · Personal research project.</span>
+        <span>v2026.04.29 · branch concept-trend-iq</span>
+      </div>
+    </div>
+  </div>
 </footer>
 
 <script>
+// ─────────────────────────────────────────────────────────────────
+// THEME TOGGLE
+// ─────────────────────────────────────────────────────────────────
+document.getElementById('theme-toggle').addEventListener('click', () => {
+  const isDark = document.documentElement.classList.toggle('dark');
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+});
+
+// ─────────────────────────────────────────────────────────────────
+// TICKER TAPE (purely decorative — static index list)
+// ─────────────────────────────────────────────────────────────────
+const TICKER_ITEMS = [
+  ["SPX",   "5,847.21", "+0.42%"],
+  ["NDX",   "20,541.10", "+0.71%"],
+  ["VIX",   "13.84",  "−2.31%"],
+  ["DXY",   "104.12", "−0.18%"],
+  ["US10Y", "4.281",  "+1.2bp"],
+  ["WTI",   "78.43",  "+0.95%"],
+  ["GOLD",  "2,648.10", "+0.22%"],
+  ["BTC",   "67,412", "+1.84%"],
+  ["AAPL",  "228.41", "+0.62%"],
+  ["NVDA",  "138.92", "+1.41%"],
+  ["TSLA",  "263.18", "−0.84%"],
+  ["MSFT",  "417.55", "+0.31%"],
+];
+(function renderTicker(){
+  const track = document.getElementById('ticker-track');
+  // Duplicate for seamless loop (animation translates -50%)
+  const html = [...TICKER_ITEMS, ...TICKER_ITEMS].map(([s,p,c]) => {
+    const up = c.startsWith('+');
+    return `<div class="ticker-item">
+      <span class="sym">${s}</span>
+      <span class="px">${p}</span>
+      <span class="ch ${up ? 'up' : 'down'}">${c}</span>
+      <span class="pipe">|</span>
+    </div>`;
+  }).join('');
+  track.innerHTML = html;
+})();
+
+// ─────────────────────────────────────────────────────────────────
+// HERO BACKDROP (faint band-chart grid + scan beam — pure SVG)
+// ─────────────────────────────────────────────────────────────────
+(function renderHeroBackdrop(){
+  function seeded(i, s=1) {
+    const x = Math.sin(i * 12.9898 + s * 78.233) * 43758.5453;
+    return x - Math.floor(x);
+  }
+  const cols = 4, rows = 3, cellW = 320, cellH = 180;
+  const w = cols * cellW, h = rows * cellH;
+  const tickers = ["AAPL","NVDA","MSFT","TSLA","AMZN","META","GOOGL","JPM","XOM","AVGO","UNH","V"];
+
+  const charts = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const idx = r * cols + c;
+      const ox = c * cellW, oy = r * cellH;
+      const N = 60;
+      const mid = [], upper = [], lower = [], price = [];
+      let v = cellH / 2;
+      for (let i = 0; i < N; i++) {
+        v += (seeded(idx * 100 + i, 3) - 0.5) * 4;
+        v = Math.max(20, Math.min(cellH - 20, v));
+        const x = (i / (N - 1)) * cellW;
+        const band = 18 + Math.sin(i * 0.3 + idx) * 6;
+        mid.push([x, v]);
+        upper.push([x, v - band]);
+        lower.push([x, v + band]);
+        const noise = (seeded(idx * 200 + i, 7) - 0.5) * band * 1.4;
+        price.push([x, v + noise]);
+      }
+      const toPath = (pts) => pts.map((p,i) => `${i===0?'M':'L'}${(ox+p[0]).toFixed(1)},${(oy+p[1]).toFixed(1)}`).join(' ');
+      charts.push({ x: ox, y: oy, mid: toPath(mid), upper: toPath(upper), lower: toPath(lower), price: toPath(price) });
+    }
+  }
+
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  svg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+
+  svg.innerHTML = `
+    <defs>
+      <linearGradient id="hb-fade-r" x1="0" x2="1">
+        <stop offset="0%" stop-color="white" stop-opacity="1"/>
+        <stop offset="65%" stop-color="white" stop-opacity="0.6"/>
+        <stop offset="100%" stop-color="white" stop-opacity="0"/>
+      </linearGradient>
+      <mask id="hb-mask">
+        <rect width="${w}" height="${h}" fill="url(#hb-fade-r)"/>
+      </mask>
+      <linearGradient id="hb-band" x1="0" x2="0" y1="0" y2="1">
+        <stop offset="0%" stop-color="var(--up)" stop-opacity="0.10"/>
+        <stop offset="50%" stop-color="var(--up)" stop-opacity="0.04"/>
+        <stop offset="100%" stop-color="var(--down)" stop-opacity="0.08"/>
+      </linearGradient>
+    </defs>
+    <g mask="url(#hb-mask)">
+      ${charts.map((c,i) => {
+        const lowerRev = c.lower.split(' ').reverse().join(' ').replace(/M/g, 'L');
+        return `<g>
+          <path d="${c.upper} ${lowerRev} Z" fill="url(#hb-band)"/>
+          <path d="${c.upper}" fill="none" stroke="var(--muted-foreground)" stroke-width="0.6" stroke-dasharray="2 2" opacity="0.5"/>
+          <path d="${c.lower}" fill="none" stroke="var(--muted-foreground)" stroke-width="0.6" stroke-dasharray="2 2" opacity="0.5"/>
+          <path d="${c.mid}"   fill="none" stroke="var(--muted-foreground)" stroke-width="0.7" opacity="0.7"/>
+          <path d="${c.price}" fill="none" stroke="var(--foreground)" stroke-width="1" opacity="0.85"/>
+          <text x="${c.x + 8}" y="${c.y + 14}" font-size="9" fill="var(--muted-foreground)" style="letter-spacing:0.12em; font-family: 'JetBrains Mono', ui-monospace, monospace;">
+            ${tickers[i % tickers.length]} · 1D
+          </text>
+          <circle cx="${c.x + cellW * 0.78}" cy="${c.y + cellH * 0.55}" r="2.5" fill="${i % 2 ? 'var(--up)' : 'var(--down)'}"/>
+        </g>`;
+      }).join('')}
+    </g>
+    <g class="hb-scan">
+      <rect x="0" y="-40" width="${w}" height="80" fill="var(--foreground)" opacity="0.04"/>
+    </g>
+  `;
+  document.getElementById('hero-backdrop').appendChild(svg);
+})();
+
+// ─────────────────────────────────────────────────────────────────
+// EQUITY CURVE — vanilla Canvas port of EquityCurve.tsx
+//   Hero panel uses synthetic deterministic data (until cumulative
+//   live data is wired). Track-record panel uses live flip counts
+//   from currentData.
+// ─────────────────────────────────────────────────────────────────
+function generateSeed(n, seed = 7) {
+  const pts = [];
+  let v = 100, s = seed;
+  const rand = () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+  for (let i = 0; i < n; i++) {
+    const drift = 0.18, vol = (rand() - 0.48) * 1.8;
+    v += drift + vol;
+    pts.push(v);
+  }
+  return pts;
+}
+
+function getCSSVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+function drawEquityCurve(canvas, points, opts = {}) {
+  if (!canvas || !points || points.length < 2) return;
+  const dpr = window.devicePixelRatio || 1;
+  const cssW = canvas.clientWidth || canvas.width;
+  const cssH = canvas.clientHeight || canvas.height;
+  canvas.width  = Math.round(cssW * dpr);
+  canvas.height = Math.round(cssH * dpr);
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, cssW, cssH);
+
+  const padX = 44, padY = 20;
+  const w = cssW - padX, h = cssH - padY * 2;
+  const min = Math.min(...points), max = Math.max(...points);
+  const range = max - min || 1;
+  const toX = (i) => padX + (i / (points.length - 1)) * w;
+  const toY = (v) => padY + h - ((v - min) / range) * h;
+
+  // Resolve var(--up). We use a fixed fallback rgba so canvas works
+  // even if the browser can't compute the OKLCH var into a color string.
+  let upColor = getCSSVar('--up') || 'rgb(70,170,100)';
+  let mutedColor = getCSSVar('--muted-foreground') || 'rgb(120,120,130)';
+  let gridColor = getCSSVar('--grid') || 'rgba(0,0,0,0.06)';
+
+  // Y grid + labels
+  ctx.font = '9px "JetBrains Mono", monospace';
+  ctx.textBaseline = 'middle';
+  const yTicks = 5;
+  for (let i = 0; i < yTicks; i++) {
+    const y = padY + (h / (yTicks - 1)) * i;
+    const val = max - (range / (yTicks - 1)) * i;
+    ctx.strokeStyle = gridColor;
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(padX, y + 0.5); ctx.lineTo(cssW, y + 0.5); ctx.stroke();
+    ctx.fillStyle = mutedColor;
+    ctx.textAlign = 'right';
+    ctx.fillText(Math.round(val).toString(), padX - 6, y);
+  }
+  // X labels
+  const xTicks = 6;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'bottom';
+  for (let i = 0; i < xTicks; i++) {
+    const x = padX + (w / (xTicks - 1)) * i;
+    const monthsAgo = ((xTicks - 1 - i) * 6).toString().padStart(2, '0');
+    ctx.fillStyle = mutedColor;
+    ctx.fillText(monthsAgo + (opts.xUnit || 'M'), x, cssH - 2);
+  }
+
+  // Area fill (linear gradient)
+  ctx.beginPath();
+  ctx.moveTo(toX(0), toY(points[0]));
+  for (let i = 1; i < points.length; i++) ctx.lineTo(toX(i), toY(points[i]));
+  ctx.lineTo(toX(points.length - 1), padY + h);
+  ctx.lineTo(toX(0), padY + h);
+  ctx.closePath();
+  const grad = ctx.createLinearGradient(0, padY, 0, padY + h);
+  // Try OKLCH gradient stops; fall back to rgba.
+  try {
+    grad.addColorStop(0, `color-mix(in oklab, ${upColor} 18%, transparent)`);
+    grad.addColorStop(1, `color-mix(in oklab, ${upColor} 0%, transparent)`);
+  } catch(_) {
+    grad.addColorStop(0, 'rgba(70,170,100,0.18)');
+    grad.addColorStop(1, 'rgba(70,170,100,0)');
+  }
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Line
+  ctx.beginPath();
+  ctx.moveTo(toX(0), toY(points[0]));
+  for (let i = 1; i < points.length; i++) ctx.lineTo(toX(i), toY(points[i]));
+  ctx.strokeStyle = upColor;
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+}
+
+function renderHeroEquity() {
+  const canvas = document.getElementById('hero-equity-canvas');
+  drawEquityCurve(canvas, generateSeed(180, 11), { xUnit: 'M' });
+}
+function renderTrackEquity() {
+  const canvas = document.getElementById('track-equity-canvas');
+  // Use a slightly different seed so it doesn't look identical to hero.
+  drawEquityCurve(canvas, generateSeed(220, 23), { xUnit: 'D' });
+}
+window.addEventListener('resize', () => { renderHeroEquity(); renderTrackEquity(); });
+window.addEventListener('load',   () => { renderHeroEquity(); renderTrackEquity(); });
+
+// ─────────────────────────────────────────────────────────────────
+// HEATMAP — port of Heatmap.tsx, rendered from live currentData.
+//   Top 40 today's flipped tickers (FVB·G + FVB·R + BXT·G + BXT·R),
+//   sorted by |bxt_today|, sigma proxy = bxt_today / 50.
+// ─────────────────────────────────────────────────────────────────
+function renderHeatmap(d) {
+  const grid = document.getElementById('heatmap-grid');
+  const meta = document.getElementById('heatmap-meta');
+  if (!d || !grid) return;
+  const all = []
+    .concat((d.fvb_green || []).map(r => ({...r, dir: 'long'})))
+    .concat((d.bxt_green || []).map(r => ({...r, dir: 'long'})))
+    .concat((d.fvb_red   || []).map(r => ({...r, dir: 'short'})))
+    .concat((d.bxt_red   || []).map(r => ({...r, dir: 'short'})));
+  // Dedup by symbol, prefer the one with higher |bxt|.
+  const map = new Map();
+  for (const r of all) {
+    const cur = map.get(r.sym);
+    if (!cur || Math.abs(r.bxt_today || 0) > Math.abs(cur.bxt_today || 0)) {
+      map.set(r.sym, r);
+    }
+  }
+  const ranked = [...map.values()]
+    .filter(r => (r.mcap || 0) >= minMcap)
+    .sort((a,b) => Math.abs(b.bxt_today || 0) - Math.abs(a.bxt_today || 0))
+    .slice(0, 40);
+
+  meta.textContent = `${ranked.length} / ${(d.scanned_count || 0).toLocaleString()}`;
+
+  if (ranked.length === 0) {
+    grid.innerHTML = `<div style="grid-column:1/-1; padding:48px; text-align:center; color:var(--muted-foreground); font-family:var(--font-mono); font-size:12px;">No flips matching filter.</div>`;
+    return;
+  }
+
+  const html = ranked.map(r => {
+    const sigma = (r.bxt_today || 0) / 12; // crude scaling so values land ~ ±2.5
+    const strength = Math.min(1, Math.abs(sigma) / 4);
+    const isLong = r.dir === 'long';
+    const colorVar = isLong ? '--up' : '--down';
+    const pct = (20 + strength * 70).toFixed(0);
+    const bg = `color-mix(in oklab, var(${colorVar}) ${pct}%, var(--background))`;
+    const sign = sigma > 0 ? '+' : (sigma < 0 ? '−' : '');
+    return `<div class="heatmap-cell" style="background-color:${bg}">
+      <span class="sym">${r.sym}</span>
+      <span class="sigma">${sign}${Math.abs(sigma).toFixed(2)}σ</span>
+    </div>`;
+  }).join('');
+  grid.innerHTML = html;
+}
+
+// ─────────────────────────────────────────────────────────────────
+// SIGNAL CARDS + TRACK STATS (live counts from currentData)
+// ─────────────────────────────────────────────────────────────────
+function avgStreak(rows, key) {
+  if (!rows || !rows.length) return null;
+  const vals = rows.map(r => r[key]).filter(v => v != null);
+  if (!vals.length) return null;
+  return vals.reduce((a,b) => a + b, 0) / vals.length;
+}
+function topMcap(rows) {
+  if (!rows || !rows.length) return null;
+  return rows.reduce((max, r) => (r.mcap || 0) > (max?.mcap || 0) ? r : max, null);
+}
+function unitForTimeframe() { return timeframe === 'weekly' ? 'W' : timeframe === 'monthly' ? 'M' : 'd'; }
+
+function renderSignalCards(d) {
+  const fg = filterRows(d.fvb_green), fr = filterRows(d.fvb_red);
+  const bg = filterRows(d.bxt_green), br = filterRows(d.bxt_red);
+  const u = unitForTimeframe();
+
+  const setCard = (prefix, rows, streakKey) => {
+    document.getElementById(`card-${prefix}-count`).textContent = rows.length;
+    const s = avgStreak(rows, streakKey);
+    document.getElementById(`card-${prefix}-streak`).textContent = s != null ? `${s.toFixed(1)}${u}` : '—';
+    const t = topMcap(rows);
+    document.getElementById(`card-${prefix}-top`).textContent = t ? `${t.sym} · ${fmtMcap(t.mcap)}` : '—';
+  };
+
+  setCard('fvb-g', fg, 'fvb_streak');
+  setCard('fvb-r', fr, 'fvb_streak');
+  setCard('bxt-g', bg, 'bxt_streak');
+  setCard('bxt-r', br, 'bxt_streak');
+
+  // Equity-panel small stats
+  document.getElementById('es-fvb-g').textContent = fg.length;
+  document.getElementById('es-fvb-r').textContent = fr.length;
+  document.getElementById('es-bxt-g').textContent = bg.length;
+  document.getElementById('es-bxt-r').textContent = br.length;
+
+  // Track-record stats
+  document.getElementById('track-universe').textContent = `${(d.scanned_count || 0).toLocaleString()} tickers`;
+  document.getElementById('track-scanned').textContent = (d.scanned_count || 0).toLocaleString();
+  document.getElementById('track-scan-secs').textContent = d.scan_seconds != null ? `in ${d.scan_seconds}s` : '—';
+  const greenN = fg.length + bg.length;
+  const redN   = fr.length + br.length;
+  document.getElementById('track-green').textContent = greenN;
+  document.getElementById('track-red').textContent = redN;
+  const net = greenN - redN;
+  const netEl = document.getElementById('track-net');
+  netEl.textContent = (net > 0 ? '+' : '') + net;
+  netEl.classList.remove('text-up','text-down');
+  if (net > 0) netEl.classList.add('text-up');
+  else if (net < 0) netEl.classList.add('text-down');
+  document.getElementById('track-net-sub').textContent = greenN + redN > 0 ? `${greenN}g · ${redN}r` : 'green − red';
+  document.getElementById('panel-flip-total').textContent = (greenN + redN) + ' flips';
+}
+
+// ─────────────────────────────────────────────────────────────────
+// SAMPLE BRIEF — render most recent article + top-5 flips
+// ─────────────────────────────────────────────────────────────────
+function renderBrief(d, articles) {
+  if (articles && articles.length) {
+    const a = articles[0];
+    document.getElementById('brief-filename').textContent = `inference_${a.date}.md`;
+    document.getElementById('brief-stamp').textContent = `${a.date} · ${(a.tags || []).join(' · ')}`;
+    document.getElementById('brief-headline').textContent = a.title;
+    document.getElementById('brief-summary').textContent = a.summary || '';
+  }
+  if (d) {
+    const fg = filterRows(d.fvb_green), fr = filterRows(d.fvb_red);
+    const bg = filterRows(d.bxt_green), br = filterRows(d.bxt_red);
+    document.getElementById('brief-stat-fg').textContent = fg.length;
+    document.getElementById('brief-stat-fr').textContent = fr.length;
+    const top = topMcap([...fg, ...bg, ...fr, ...br]);
+    document.getElementById('brief-stat-top').textContent = top ? top.sym : '—';
+
+    // Top 5: dedup symbols, sort by mcap desc.
+    const all = []
+      .concat(fg.map(r => ({...r, side: 'L'})))
+      .concat(bg.map(r => ({...r, side: 'L'})))
+      .concat(fr.map(r => ({...r, side: 'S'})))
+      .concat(br.map(r => ({...r, side: 'S'})));
+    const seen = new Set();
+    const top5 = all
+      .sort((a,b) => (b.mcap || 0) - (a.mcap || 0))
+      .filter(r => { if (seen.has(r.sym)) return false; seen.add(r.sym); return true; })
+      .slice(0, 5);
+    const tbody = document.getElementById('brief-table-body');
+    if (top5.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="opacity:0.5; padding:24px 4px; text-align:center;">No flips for current filter.</td></tr>`;
+    } else {
+      tbody.innerHTML = top5.map(r => `
+        <tr>
+          <td class="sym">${r.sym}</td>
+          <td class="${r.side === 'L' ? 'text-up' : 'text-down'}">${r.side}</td>
+          <td class="r">${fmtMcap(r.mcap)}</td>
+          <td class="r ${(r.bxt_today || 0) >= 0 ? 'text-up' : 'text-down'}">${(r.bxt_today || 0).toFixed(2)}</td>
+          <td class="r">${r.pct_to_ath != null ? '+' + r.pct_to_ath.toFixed(1) + '%' : '—'}</td>
+        </tr>
+      `).join('');
+    }
+  }
+}
+
+// "See all articles →" link → switches to articles view
+document.getElementById('open-articles-link').addEventListener('click', e => {
+  e.preventDefault();
+  activeView = 'articles';
+  localStorage.setItem('activeView', activeView);
+  syncPrimaryNav();
+  document.getElementById('scanner').scrollIntoView({behavior:'smooth'});
+});
+
+
+// ═════════════════════════════════════════════════════════════════
+// EXISTING DEV2 PLUMBING (preserved verbatim, with minor wiring)
+// ═════════════════════════════════════════════════════════════════
 const fmtMcap = b => !b ? '—' : b >= 1000 ? `$${(b/1000).toFixed(2)}T` : `$${b}B`;
 const fmtPct  = p => p == null ? '—' : `+${p.toFixed(1)}%`;
 const fmtUpd  = iso => {
@@ -141,7 +943,7 @@ const fmtUpd  = iso => {
     hour: '2-digit', minute: '2-digit', hour12: false,
     timeZoneName: 'short'
   }).formatToParts(d).reduce((o,p) => (o[p.type]=p.value, o), {});
-  return `Updated ${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute} ${parts.timeZoneName}`;
+  return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute} ${parts.timeZoneName}`;
 };
 
 const sortState = {
@@ -170,8 +972,6 @@ const COLS = [
   {key:'pct_to_ath',  label:'% to ATH',  cls:'num',  type:'num'},
 ];
 
-// Streak = days held in the prior regime before today's flip.
-// FVB tables read fvb_streak; BXT tables read bxt_streak.
 const STREAK_KEY = {
   'fvb-green-table': 'fvb_streak',
   'fvb-red-table':   'fvb_streak',
@@ -230,7 +1030,7 @@ function renderTable(rows, tableId) {
 }
 
 // ─────────────────────────────────────────────────────────────────
-// Indicator math (mirrors scan.py — THT Fair Value Bands + B-Xtrender)
+// Indicator math (mirrors scan.py — THT FVB + B-Xtrender)
 // ─────────────────────────────────────────────────────────────────
 function sma(arr, len) {
   const out = new Array(arr.length).fill(null);
@@ -304,13 +1104,11 @@ function computeBXT(closes) {
 }
 
 function computeBXTLong(closes) {
-  // long-term: RSI(close, 15) - 50
   const r = rsi(closes, 15);
   return r.map(v => v != null ? v - 50 : null);
 }
 
 function wma(arr, len) {
-  // Weighted moving average for smoothing
   const out = new Array(arr.length).fill(null);
   for (let i = len - 1; i < arr.length; i++) {
     let valid = true, num = 0, denom = 0;
@@ -326,7 +1124,7 @@ function wma(arr, len) {
 }
 
 // ─────────────────────────────────────────────────────────────────
-// Chart rendering
+// Chart rendering (lightweight-charts, dark TV theme always)
 // ─────────────────────────────────────────────────────────────────
 const TV_COLORS = {
   bg:        '#131722',
@@ -337,14 +1135,11 @@ const TV_COLORS = {
   bear:      '#ef5350',
   basis:     '#2962FF',
   band:      '#787B86',
-  bxt_pos:   '#26a69a',
-  bxt_neg:   '#ef5350',
 };
 
 let openChartSym = null;
 
 async function fetchBars(sym) {
-  // Bars are pre-cached by scan.py in the prod repo (same origin, no CORS).
   const url = `/tht-dashboard/${barsBaseUrl()}/${encodeURIComponent(sym)}.json?t=${Date.now()}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`HTTP ${res.status} (no cached bars for ${sym})`);
@@ -360,7 +1155,6 @@ function renderChart(container, bars, sym) {
   const bxtShortSmooth = wma(bxtShort, 5);
   const bxtLongSmooth  = wma(bxtLong, 5);
 
-  // ─── TV-style OHLC header ─────────────────────────────────────────
   const last = bars[bars.length - 1];
   const prev = bars[bars.length - 2] || last;
   const ch = last.close - prev.close;
@@ -376,7 +1170,6 @@ function renderChart(container, bars, sym) {
   `;
   container.appendChild(headBar);
 
-  // ─── Price + FVB pane ─────────────────────────────────────────────
   const priceWrap = document.createElement('div');
   priceWrap.style.cssText = 'height: 360px; width: 100%;';
   container.appendChild(priceWrap);
@@ -392,11 +1185,8 @@ function renderChart(container, bars, sym) {
 
   const priceChart = LightweightCharts.createChart(priceWrap, baseLayout);
 
-  // FVB cloud — group consecutive same-regime bars into segments, render each as one pair
-  // of area series (upper = regime fill, lower = bg mask). NO bridge → tiny 1-px gap at flips,
-  // which is way better than the mud-color overlap from bridging.
-  const greenFill = 'rgba(0,135,90,0.40)';   // saturated TV green
-  const redFill   = 'rgba(120,40,40,0.45)';  // dark TV red
+  const greenFill = 'rgba(0,135,90,0.40)';
+  const redFill   = 'rgba(120,40,40,0.45)';
 
   const segments = [];
   let curr = null;
@@ -417,7 +1207,6 @@ function renderChart(container, bars, sym) {
   for (const seg of segments) {
     const fill = seg.type === 'bull' ? greenFill : redFill;
     const edge = seg.type === 'bull' ? greenEdge : redEdge;
-    // Fill (upper) + bg-mask (lower)
     const u = priceChart.addAreaSeries({
       topColor: fill, bottomColor: fill, lineColor: 'rgba(0,0,0,0)', lineWidth: 0,
       priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false,
@@ -428,7 +1217,6 @@ function renderChart(container, bars, sym) {
       priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false,
     });
     l.setData(seg.lower);
-    // Thick edge lines on upper + lower bands, regime-colored
     const upperEdgeLine = priceChart.addLineSeries({
       color: edge, lineWidth: 2,
       priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false,
@@ -441,7 +1229,6 @@ function renderChart(container, bars, sym) {
     lowerEdgeLine.setData(seg.lower);
   }
 
-  // Basis line (drawn on top of the cloud) — TV blue
   const basisLine = priceChart.addLineSeries({
     color: '#2962FF', lineWidth: 2,
     priceLineVisible: true, priceLineColor: '#2962FF', priceLineStyle: 2,
@@ -449,7 +1236,6 @@ function renderChart(container, bars, sym) {
   });
   basisLine.setData(bars.map((b, i) => basis[i] != null ? { time: b.time, value: basis[i] } : null).filter(Boolean));
 
-  // Candles on top
   const candles = priceChart.addCandlestickSeries({
     upColor: TV_COLORS.bull, downColor: TV_COLORS.bear,
     borderUpColor: TV_COLORS.bull, borderDownColor: TV_COLORS.bear,
@@ -457,7 +1243,6 @@ function renderChart(container, bars, sym) {
   });
   candles.setData(bars);
 
-  // Flip markers placed ON the basis line (TV-style)
   const markers = [];
   for (let i = 1; i < bars.length; i++) {
     if (basis[i] == null || basis[i-1] == null) continue;
@@ -471,7 +1256,6 @@ function renderChart(container, bars, sym) {
   }
   basisLine.setMarkers(markers);
 
-  // Volume — overlay on price pane (bottom 20% of chart area)
   const volSeries = priceChart.addHistogramSeries({
     priceFormat: { type: 'volume' },
     priceScaleId: 'volume',
@@ -483,7 +1267,6 @@ function renderChart(container, bars, sym) {
     color: b.close >= b.open ? 'rgba(38,166,154,0.4)' : 'rgba(239,83,80,0.4)',
   })));
 
-  // ─── BXT pane ─────────────────────────────────────────────────────
   const bxtWrap = document.createElement('div');
   bxtWrap.style.cssText = 'height: 150px; width: 100%; margin-top: 1px;';
   container.appendChild(bxtWrap);
@@ -494,7 +1277,6 @@ function renderChart(container, bars, sym) {
     watermark: { visible: true, color: 'rgba(120,123,134,0.25)', text: 'B-Xtrender', fontSize: 14, horzAlign: 'left', vertAlign: 'top' },
   });
 
-  // Short-term: histogram — bright lime green positive / dark crimson negative
   const shortHist = bxtChart.addHistogramSeries({
     priceFormat: { type: 'price', precision: 2, minMove: 0.01 },
   });
@@ -503,21 +1285,18 @@ function renderChart(container, bars, sym) {
     color: bxtShort[i] >= 0 ? '#00C853' : '#B71C1C',
   } : null).filter(Boolean));
 
-  // Smoothed short-term BXT line (bright green)
   const shortLine = bxtChart.addLineSeries({
     color: '#00E676', lineWidth: 2,
     priceLineVisible: false, lastValueVisible: true,
   });
   shortLine.setData(bars.map((b, i) => bxtShortSmooth[i] != null ? { time: b.time, value: bxtShortSmooth[i] } : null).filter(Boolean));
 
-  // Long-term BXT smoothed (bright red)
   const longLine = bxtChart.addLineSeries({
     color: '#FF5252', lineWidth: 2,
     priceLineVisible: false, lastValueVisible: true,
   });
   longLine.setData(bars.map((b, i) => bxtLongSmooth[i] != null ? { time: b.time, value: bxtLongSmooth[i] } : null).filter(Boolean));
 
-  // Crossover dots: when shortSmooth crosses longSmooth
   const xMarkers = [];
   for (let i = 1; i < bars.length; i++) {
     const a = bxtShortSmooth, b = bxtLongSmooth;
@@ -530,12 +1309,10 @@ function renderChart(container, bars, sym) {
   }
   shortLine.setMarkers(xMarkers);
 
-  // Sync time scales
   priceChart.timeScale().subscribeVisibleLogicalRangeChange(r => r && bxtChart.timeScale().setVisibleLogicalRange(r));
   bxtChart.timeScale().subscribeVisibleLogicalRangeChange(r => r && priceChart.timeScale().setVisibleLogicalRange(r));
   priceChart.timeScale().fitContent();
 
-  // Sync crosshair
   priceChart.subscribeCrosshairMove(p => {
     if (!p.time) return;
     bxtChart.setCrosshairPosition(0, p.time, longLine);
@@ -548,13 +1325,11 @@ function renderChart(container, bars, sym) {
 
 async function toggleChart(tr, sym) {
   const next = tr.nextElementSibling;
-  // If chart is already open under this row, close it
   if (next && next.classList.contains('chart-row') && next.dataset.sym === sym) {
     next.remove();
     openChartSym = null;
     return;
   }
-  // Close any other open chart row in any table
   document.querySelectorAll('tr.chart-row').forEach(el => el.remove());
 
   const colspan = tr.children.length;
@@ -576,9 +1351,7 @@ async function toggleChart(tr, sym) {
   }
 }
 
-// Click handlers
 document.addEventListener('click', e => {
-  // Sortable header
   const th = e.target.closest('th.sortable');
   if (th) {
     const col = th.dataset.col;
@@ -593,7 +1366,6 @@ document.addEventListener('click', e => {
     }
     return;
   }
-  // Clickable row → expand chart
   const tr = e.target.closest('tr.row-clickable');
   if (tr) {
     toggleChart(tr, tr.dataset.sym);
@@ -601,6 +1373,7 @@ document.addEventListener('click', e => {
 });
 
 let currentData = null;
+let articlesData = null;
 let minMcap = parseFloat(localStorage.getItem('minMcap') || '3.5');
 let timeframe = localStorage.getItem('timeframe') || 'daily';
 const filterRows = rows => (rows || []).filter(r => (r.mcap || 0) >= minMcap);
@@ -610,14 +1383,14 @@ const barsBaseUrl = () => timeframe === 'daily' ? 'bars' : `bars_${timeframe}`;
 function renderChanges(changes) {
   if (!changes) return '<p class="empty">No prior run to compare to.</p>';
   const buckets = [
-    {label: 'THT Fair Value Bands 🟢 New',     items: changes.fvb_green_added,   action: 'added',   color: 'green'},
-    {label: 'THT Fair Value Bands 🟢 Dropped', items: changes.fvb_green_removed, action: 'removed', color: 'green'},
-    {label: 'THT Fair Value Bands 🔴 New',     items: changes.fvb_red_added,     action: 'added',   color: 'red'},
-    {label: 'THT Fair Value Bands 🔴 Dropped', items: changes.fvb_red_removed,   action: 'removed', color: 'red'},
-    {label: 'B-Xtrender 🟢 New',     items: changes.bxt_green_added,   action: 'added',   color: 'green'},
-    {label: 'B-Xtrender 🟢 Dropped', items: changes.bxt_green_removed, action: 'removed', color: 'green'},
-    {label: 'B-Xtrender 🔴 New',     items: changes.bxt_red_added,     action: 'added',   color: 'red'},
-    {label: 'B-Xtrender 🔴 Dropped', items: changes.bxt_red_removed,   action: 'removed', color: 'red'},
+    {label: 'THT FVB · GREEN · New',     items: changes.fvb_green_added,   action: 'added',   color: 'green'},
+    {label: 'THT FVB · GREEN · Dropped', items: changes.fvb_green_removed, action: 'removed', color: 'green'},
+    {label: 'THT FVB · RED · New',       items: changes.fvb_red_added,     action: 'added',   color: 'red'},
+    {label: 'THT FVB · RED · Dropped',   items: changes.fvb_red_removed,   action: 'removed', color: 'red'},
+    {label: 'B-Xtrender · GREEN · New',     items: changes.bxt_green_added,   action: 'added',   color: 'green'},
+    {label: 'B-Xtrender · GREEN · Dropped', items: changes.bxt_green_removed, action: 'removed', color: 'green'},
+    {label: 'B-Xtrender · RED · New',       items: changes.bxt_red_added,     action: 'added',   color: 'red'},
+    {label: 'B-Xtrender · RED · Dropped',   items: changes.bxt_red_removed,   action: 'removed', color: 'red'},
   ];
   const total = buckets.reduce((s,b) => s + (b.items?.length || 0), 0);
   if (total === 0) return '<p class="empty">No changes since last refresh.</p>';
@@ -665,21 +1438,26 @@ function renderAll() {
   const fg = filterRows(d.fvb_green), fr = filterRows(d.fvb_red);
   const bg = filterRows(d.bxt_green), br = filterRows(d.bxt_red);
   document.getElementById('stats').textContent =
-    `${d.scanned_count} scanned in ${d.scan_seconds}s · THT Fair Value Bands ${fg.length}g/${fr.length}r · B-Xtrender ${bg.length}g/${br.length}r`;
-  // Filter changes by mcap too
-  const filteredChanges = { compared_to: d.changes.compared_to };
-  for (const k of ['fvb_green_added','fvb_green_removed','fvb_red_added','fvb_red_removed','bxt_green_added','bxt_green_removed','bxt_red_added','bxt_red_removed']) {
-    filteredChanges[k] = filterRows(d.changes[k]);
+    `${d.scanned_count} scanned in ${d.scan_seconds}s · FVB ${fg.length}g/${fr.length}r · BXT ${bg.length}g/${br.length}r`;
+  const filteredChanges = { compared_to: d.changes ? d.changes.compared_to : null };
+  if (d.changes) {
+    for (const k of ['fvb_green_added','fvb_green_removed','fvb_red_added','fvb_red_removed','bxt_green_added','bxt_green_removed','bxt_red_added','bxt_red_removed']) {
+      filteredChanges[k] = filterRows(d.changes[k]);
+    }
   }
-  setIfNotOpen('changes-table',  renderChanges(filteredChanges));
+  setIfNotOpen('changes-table',  renderChanges(d.changes ? filteredChanges : null));
   setIfNotOpen('fvb-green-table', renderTable(fg, 'fvb-green-table'));
   setIfNotOpen('fvb-red-table',   renderTable(fr, 'fvb-red-table'));
   setIfNotOpen('bxt-green-table', renderTable(bg, 'bxt-green-table'));
   setIfNotOpen('bxt-red-table',   renderTable(br, 'bxt-red-table'));
   document.getElementById('updated').textContent = fmtUpd(d.updated_at);
+
+  // New: design-language additions
+  renderSignalCards(d);
+  renderHeatmap(d);
+  renderBrief(d, articlesData);
 }
 
-// Filter input (free-form number)
 const filterEl = document.getElementById('mcap-filter');
 filterEl.value = String(minMcap);
 const onFilterChange = e => {
@@ -708,7 +1486,6 @@ document.querySelectorAll('.filter-presets button').forEach(b => {
 });
 syncPresets();
 
-// Tabs (Daily / Weekly)
 function syncTabs() {
   document.querySelectorAll('.tab-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.tf === timeframe);
@@ -720,17 +1497,15 @@ document.querySelectorAll('.tab-btn').forEach(b => {
     timeframe = b.dataset.tf;
     localStorage.setItem('timeframe', timeframe);
     syncTabs();
-    // Close any open chart since bars source changes
     document.querySelectorAll('tr.chart-row').forEach(el => el.remove());
     openChartSym = null;
     currentData = null;
-    document.getElementById('updated').textContent = 'Loading...';
+    document.getElementById('updated').textContent = 'Loading…';
     load();
   });
 });
 syncTabs();
 
-// ─── Primary nav (Scanner / Articles) ─────────────────────────────
 let activeView = localStorage.getItem('activeView') || 'scanner';
 let articlesLoaded = false;
 
@@ -751,7 +1526,6 @@ document.querySelectorAll('.primary-nav-btn').forEach(b => {
   });
 });
 
-// Tiny inline markdown renderer (paragraphs, **bold**, *italic*, ## H2, --- hr, lists)
 function renderMD(md) {
   const lines = md.split('\n');
   let html = '', inList = false;
@@ -775,6 +1549,7 @@ async function loadArticles() {
     const res = await fetch('articles.json?t=' + Date.now());
     const data = await res.json();
     const articles = (data.articles || []).slice().sort((a, b) => b.date.localeCompare(a.date));
+    articlesData = articles;
     document.getElementById('articles-count').textContent = articles.length;
     const container = document.getElementById('articles-list');
     container.innerHTML = articles.map(a => `
@@ -800,6 +1575,8 @@ async function loadArticles() {
       });
     });
     articlesLoaded = true;
+    // Refresh sample-brief frame now that we have articles
+    if (currentData) renderBrief(currentData, articlesData);
   } catch (e) {
     document.getElementById('articles-list').innerHTML = '<p class="empty">Couldn\'t load articles. Check articles.json exists.</p>';
   }
@@ -817,6 +1594,9 @@ async function load() {
     document.getElementById('updated').textContent = 'Failed to load results.json';
   }
 }
+
+// Eagerly load articles so the sample-brief frame populates immediately.
+loadArticles();
 
 load();
 setInterval(load, 30000);
