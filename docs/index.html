@@ -1140,7 +1140,7 @@ const TV_COLORS = {
 let openChartSym = null;
 
 async function fetchBars(sym) {
-  const url = `/tht-dashboard/${barsBaseUrl()}/${encodeURIComponent(sym)}.json?t=${Date.now()}`;
+  const url = `https://piraci26.github.io/tht-data/${barsBaseUrl()}/${encodeURIComponent(sym)}.json?t=${Date.now()}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`HTTP ${res.status} (no cached bars for ${sym})`);
   return await res.json();
@@ -1586,7 +1586,7 @@ syncPrimaryNav();
 
 async function load() {
   try {
-    const res = await fetch('/tht-dashboard/' + resultsUrl() + '?t=' + Date.now());
+    const res = await fetch('https://piraci26.github.io/tht-data/' + resultsUrl() + '?t=' + Date.now());
     const data = await res.json();
     currentData = data;
     renderAll();
