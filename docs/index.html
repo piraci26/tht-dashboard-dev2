@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <title>THT Dual Scan — Live regime flips for technical traders</title>
-<meta name="description" content="Daily, weekly and monthly THT Fair Value Band and B-Xtrender flips across 1,500+ US equities. Live scanner, expandable charts, research articles.">
+<meta name="description" content="Daily, weekly and monthly IQ Bands and IQ Oscillator flips across 1,500+ US equities. Live scanner, expandable charts, research articles.">
 <link rel="stylesheet" href="style.css">
 <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 
@@ -98,7 +98,7 @@
           <span class="muted">delivered the moment they print.</span>
         </h1>
         <p class="hero-lede">
-          THT Dual Scan tracks fair value bands and B-Xtrender momentum across
+          THT Dual Scan tracks fair value bands and IQ Oscillator momentum across
           1,500+ US equities and surfaces the precise bar where each name flips
           regime. Click any row to open a TradingView-grade chart.
         </p>
@@ -130,19 +130,19 @@
         </div>
         <div class="equity-panel-stats">
           <div>
-            <div class="k">FVB Green</div>
+            <div class="k">IQ Bands Green</div>
             <div class="v text-up" id="es-fvb-g">—</div>
           </div>
           <div>
-            <div class="k">FVB Red</div>
+            <div class="k">IQ Bands Red</div>
             <div class="v text-down" id="es-fvb-r">—</div>
           </div>
           <div>
-            <div class="k">BXT Green</div>
+            <div class="k">IQ Osc Green</div>
             <div class="v text-up" id="es-bxt-g">—</div>
           </div>
           <div>
-            <div class="k">BXT Red</div>
+            <div class="k">IQ Osc Red</div>
             <div class="v text-down" id="es-bxt-r">—</div>
           </div>
         </div>
@@ -172,11 +172,11 @@
     <div class="card-grid" id="signal-cards">
       <div class="card">
         <div class="card-head">
-          <span class="num">FVB · G</span>
+          <span class="num">Bands · G</span>
           <span class="status" id="card-fvb-g-status">Active</span>
         </div>
-        <h3>FVB flipped GREEN</h3>
-        <p>THT Fair Value Band closed above its 20-bar basis after a confirmed bear streak. Bullish regime initiated.</p>
+        <h3>IQ Bands flipped GREEN</h3>
+        <p>IQ Bands closed above its 20-bar basis after a confirmed bear streak. Bullish regime initiated.</p>
         <div class="card-meta">
           <div class="row"><span>Today</span><span class="v up" id="card-fvb-g-count">—</span></div>
           <div class="row"><span>Avg streak</span><span class="v" id="card-fvb-g-streak">—</span></div>
@@ -185,10 +185,10 @@
       </div>
       <div class="card">
         <div class="card-head">
-          <span class="num">FVB · R</span>
+          <span class="num">Bands · R</span>
           <span class="status down" id="card-fvb-r-status">Active</span>
         </div>
-        <h3>FVB flipped RED</h3>
+        <h3>IQ Bands flipped RED</h3>
         <p>Price closed back below the basis after a sustained bull regime. Bearish regime initiated.</p>
         <div class="card-meta">
           <div class="row"><span>Today</span><span class="v down" id="card-fvb-r-count">—</span></div>
@@ -198,10 +198,10 @@
       </div>
       <div class="card">
         <div class="card-head">
-          <span class="num">BXT · G</span>
+          <span class="num">Osc · G</span>
           <span class="status" id="card-bxt-g-status">Active</span>
         </div>
-        <h3>B-Xtrender flipped GREEN</h3>
+        <h3>IQ Oscillator flipped GREEN</h3>
         <p>RSI of the EMA(5)−EMA(20) differential crossed back above zero — momentum acceleration turning positive.</p>
         <div class="card-meta">
           <div class="row"><span>Today</span><span class="v up" id="card-bxt-g-count">—</span></div>
@@ -211,11 +211,11 @@
       </div>
       <div class="card">
         <div class="card-head">
-          <span class="num">BXT · R</span>
+          <span class="num">Osc · R</span>
           <span class="status down" id="card-bxt-r-status">Active</span>
         </div>
-        <h3>B-Xtrender flipped RED</h3>
-        <p>BXT crossed below zero — second derivative of trend turning down. Often precedes FVB regime change.</p>
+        <h3>IQ Oscillator flipped RED</h3>
+        <p>IQ Oscillator crossed below zero — second derivative of trend turning down. Often precedes IQ Bands regime change.</p>
         <div class="card-meta">
           <div class="row"><span>Today</span><span class="v down" id="card-bxt-r-count">—</span></div>
           <div class="row"><span>Avg streak</span><span class="v" id="card-bxt-r-streak">—</span></div>
@@ -276,22 +276,22 @@
       </section>
 
       <section class="scanner-section">
-        <h2><span class="dot dot-green"></span>THT Fair Value Bands flipped GREEN today</h2>
+        <h2><span class="dot dot-green"></span>IQ Bands flipped GREEN today</h2>
         <div id="fvb-green-table" class="table-wrap"></div>
       </section>
 
       <section class="scanner-section">
-        <h2><span class="dot dot-red"></span>THT Fair Value Bands flipped RED today</h2>
+        <h2><span class="dot dot-red"></span>IQ Bands flipped RED today</h2>
         <div id="fvb-red-table" class="table-wrap"></div>
       </section>
 
       <section class="scanner-section">
-        <h2><span class="dot dot-green"></span>B-Xtrender flipped GREEN today</h2>
+        <h2><span class="dot dot-green"></span>IQ Oscillator flipped GREEN today</h2>
         <div id="bxt-green-table" class="table-wrap"></div>
       </section>
 
       <section class="scanner-section">
-        <h2><span class="dot dot-red"></span>B-Xtrender flipped RED today</h2>
+        <h2><span class="dot dot-red"></span>IQ Oscillator flipped RED today</h2>
         <div id="bxt-red-table" class="table-wrap"></div>
       </section>
     </div>
@@ -333,12 +333,12 @@
       <div class="stat">
         <div class="k">Composite green</div>
         <div class="v text-up" id="track-green">—</div>
-        <div class="sub">FVB·G + BXT·G</div>
+        <div class="sub">Bands·G + Osc·G</div>
       </div>
       <div class="stat">
         <div class="k">Composite red</div>
         <div class="v text-down" id="track-red">—</div>
-        <div class="sub">FVB·R + BXT·R</div>
+        <div class="sub">Bands·R + Osc·R</div>
       </div>
       <div class="stat">
         <div class="k">Net regime</div>
@@ -390,14 +390,14 @@
     <div class="method-grid">
       <div class="method-step">
         <div class="k">Step 01</div>
-        <h3>THT Fair Value Band</h3>
+        <h3>IQ Bands</h3>
         <p>For each ticker we compute a 20-bar simple-moving-average basis and a ±2σ envelope. A regime flip is recorded the bar a close crosses the basis — green when close &gt; basis, red when close &lt; basis. Pure price math, no parameters per name.</p>
         <div class="meta">basis = SMA(close, 20) · σ = stdev(close, 20) · bands = basis ± 2σ</div>
       </div>
       <div class="method-step">
         <div class="k">Step 02</div>
-        <h3>B-Xtrender momentum</h3>
-        <p>BXT measures the rate-of-change of trend by taking RSI(15) of the EMA(5) − EMA(20) differential, centred on zero. A second-derivative momentum oscillator: it flips before price often does.</p>
+        <h3>IQ Oscillator momentum</h3>
+        <p>IQ Oscillator measures the rate-of-change of trend by taking RSI(5) of the EMA(5) − EMA(20) differential, centred on zero. A second-derivative momentum oscillator: it flips before price often does. A longer-term WMA(RSI(close, 15) − 50, 5) line is overlaid for context.</p>
         <div class="meta">bxt = RSI(EMA(5,c) − EMA(20,c), 15) − 50 · centred zero</div>
       </div>
       <div class="method-step">
@@ -440,11 +440,11 @@
           <p class="brief-body" id="brief-summary"></p>
           <div class="brief-mini-grid">
             <div>
-              <div class="k">FVB · G</div>
+              <div class="k">Bands · G</div>
               <div class="v text-up" id="brief-stat-fg">—</div>
             </div>
             <div>
-              <div class="k">FVB · R</div>
+              <div class="k">Bands · R</div>
               <div class="v text-down" id="brief-stat-fr">—</div>
             </div>
             <div>
@@ -461,7 +461,7 @@
                 <th>Sym</th>
                 <th>Side</th>
                 <th class="r">Mkt Cap</th>
-                <th class="r">BXT</th>
+                <th class="r">IQ Osc</th>
                 <th class="r">% to ATH</th>
               </tr>
             </thead>
@@ -503,8 +503,8 @@
         <div class="col">
           <h4>Methodology</h4>
           <ul>
-            <li><a href="#methodology">FVB</a></li>
-            <li><a href="#methodology">B-Xtrender</a></li>
+            <li><a href="#methodology">IQ Bands</a></li>
+            <li><a href="#methodology">IQ Oscillator</a></li>
             <li><a href="#methodology">Streak math</a></li>
           </ul>
         </div>
@@ -768,7 +768,7 @@ window.addEventListener('load',   () => { renderHeroEquity(); renderTrackEquity(
 
 // ─────────────────────────────────────────────────────────────────
 // HEATMAP — port of Heatmap.tsx, rendered from live currentData.
-//   Top 40 today's flipped tickers (FVB·G + FVB·R + BXT·G + BXT·R),
+//   Top 40 today's flipped tickers (Bands·G + Bands·R + Osc·G + Osc·R),
 //   sorted by |bxt_today|, sigma proxy = bxt_today / 50.
 // ─────────────────────────────────────────────────────────────────
 function renderHeatmap(d) {
@@ -1036,7 +1036,7 @@ function renderTable(rows, tableId) {
 }
 
 // ─────────────────────────────────────────────────────────────────
-// Indicator math (mirrors scan.py — THT FVB + B-Xtrender)
+// Indicator math (mirrors scan.py — IQ Bands + IQ Oscillator)
 // ─────────────────────────────────────────────────────────────────
 function sma(arr, len) {
   const out = new Array(arr.length).fill(null);
@@ -1084,20 +1084,37 @@ function rsi(arr, len) {
   return out;
 }
 
-function computeFVB(closes) {
-  const basis = sma(closes, 20);
-  const sd    = stdev(closes, 20);
-  const upper = basis.map((b, i) => b == null ? null : b + 2 * sd[i]);
-  const lower = basis.map((b, i) => b == null ? null : b - 2 * sd[i]);
-  return { basis, upper, lower };
+function computeIQBands(bars, length = 33, mult = 2.0, threshMult = 0.25) {
+  // IQ Bands: SMA(OHLC4, 33) basis, stdev(close, 33), outer ±2σ, inner threshold ±0.25σ.
+  // Sticky regime: close > threshUpper → bull on; close < threshLower → bear on; else stays.
+  const n = bars.length;
+  const closes = bars.map(b => b.close);
+  const ohlc4 = bars.map(b => (b.open + b.high + b.low + b.close) / 4);
+  const basis = sma(ohlc4, length);
+  const sd    = stdev(closes, length);
+  const upper        = basis.map((b, i) => b == null || sd[i] == null ? null : b + mult * sd[i]);
+  const lower        = basis.map((b, i) => b == null || sd[i] == null ? null : b - mult * sd[i]);
+  const threshUpper  = basis.map((b, i) => b == null || sd[i] == null ? null : b + threshMult * sd[i]);
+  const threshLower  = basis.map((b, i) => b == null || sd[i] == null ? null : b - threshMult * sd[i]);
+  const regimes = new Array(n).fill(null);
+  let isBull = null;
+  for (let i = 0; i < n; i++) {
+    if (basis[i] == null) continue;
+    if (isBull == null) isBull = closes[i] > basis[i];
+    else if (closes[i] > threshUpper[i]) isBull = true;
+    else if (closes[i] < threshLower[i]) isBull = false;
+    regimes[i] = isBull;
+  }
+  return { basis, upper, lower, threshUpper, threshLower, regimes };
 }
 
 function computeBXT(closes) {
+  // IQ Oscillator short line: RSI(EMA(close,5) - EMA(close,20), 5) - 50
   const e5  = ema(closes, 5);
   const e20 = ema(closes, 20);
   const diff = e5.map((v, i) => v != null && e20[i] != null ? v - e20[i] : null);
   const valid = diff.filter(v => v != null);
-  const r = rsi(valid, 15);
+  const r = rsi(valid, 5);
   const out = new Array(closes.length).fill(null);
   let j = 0;
   for (let i = 0; i < closes.length; i++) {
@@ -1155,7 +1172,7 @@ async function fetchBars(sym) {
 function renderChart(container, bars, sym) {
   container.innerHTML = '';
   const closes = bars.map(b => b.close);
-  const { basis, upper, lower } = computeFVB(closes);
+  const { basis, upper, lower, threshUpper, threshLower, regimes } = computeIQBands(bars);
   const bxtShort = computeBXT(closes);
   const bxtLong  = computeBXTLong(closes);
   const bxtShortSmooth = wma(bxtShort, 5);
@@ -1197,21 +1214,26 @@ function renderChart(container, bars, sym) {
   const segments = [];
   let curr = null;
   for (let i = 0; i < bars.length; i++) {
-    if (upper[i] == null || lower[i] == null || basis[i] == null) continue;
-    const type = closes[i] > basis[i] ? 'bull' : 'bear';
+    if (upper[i] == null || lower[i] == null || basis[i] == null || regimes[i] == null) continue;
+    const type = regimes[i] ? 'bull' : 'bear';
     if (!curr || curr.type !== type) {
-      curr = { type, upper: [], lower: [] };
+      curr = { type, upper: [], lower: [], threshUpper: [], threshLower: [] };
       segments.push(curr);
     }
     curr.upper.push({ time: bars[i].time, value: upper[i] });
     curr.lower.push({ time: bars[i].time, value: lower[i] });
+    curr.threshUpper.push({ time: bars[i].time, value: threshUpper[i] });
+    curr.threshLower.push({ time: bars[i].time, value: threshLower[i] });
   }
 
   const greenEdge = '#26a69a';
   const redEdge   = '#ef5350';
+  const greenFillInner = 'rgba(0,200,130,0.55)';
+  const redFillInner   = 'rgba(180,40,40,0.60)';
 
   for (const seg of segments) {
     const fill = seg.type === 'bull' ? greenFill : redFill;
+    const fillInner = seg.type === 'bull' ? greenFillInner : redFillInner;
     const edge = seg.type === 'bull' ? greenEdge : redEdge;
     const u = priceChart.addAreaSeries({
       topColor: fill, bottomColor: fill, lineColor: 'rgba(0,0,0,0)', lineWidth: 0,
@@ -1223,6 +1245,16 @@ function renderChart(container, bars, sym) {
       priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false,
     });
     l.setData(seg.lower);
+    const tu = priceChart.addAreaSeries({
+      topColor: fillInner, bottomColor: fillInner, lineColor: 'rgba(0,0,0,0)', lineWidth: 0,
+      priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false,
+    });
+    tu.setData(seg.threshUpper);
+    const tl = priceChart.addAreaSeries({
+      topColor: TV_COLORS.bg, bottomColor: TV_COLORS.bg, lineColor: 'rgba(0,0,0,0)', lineWidth: 0,
+      priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false,
+    });
+    tl.setData(seg.threshLower);
     const upperEdgeLine = priceChart.addLineSeries({
       color: edge, lineWidth: 2,
       priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false,
@@ -1251,12 +1283,10 @@ function renderChart(container, bars, sym) {
 
   const markers = [];
   for (let i = 1; i < bars.length; i++) {
-    if (basis[i] == null || basis[i-1] == null) continue;
-    const bullToday = bars[i].close > basis[i];
-    const bullYest  = bars[i-1].close > basis[i-1];
-    if (bullToday && !bullYest) {
+    if (regimes[i] == null || regimes[i-1] == null) continue;
+    if (regimes[i] && !regimes[i-1]) {
       markers.push({ time: bars[i].time, position: 'inBar', color: '#26a69a', shape: 'circle', size: 1.2 });
-    } else if (!bullToday && bullYest) {
+    } else if (!regimes[i] && regimes[i-1]) {
       markers.push({ time: bars[i].time, position: 'inBar', color: '#ef5350', shape: 'circle', size: 1.2 });
     }
   }
@@ -1280,7 +1310,7 @@ function renderChart(container, bars, sym) {
   const bxtChart = LightweightCharts.createChart(bxtWrap, {
     ...baseLayout,
     rightPriceScale: { borderColor: TV_COLORS.border, scaleMargins: { top: 0.1, bottom: 0.1 } },
-    watermark: { visible: true, color: 'rgba(120,123,134,0.25)', text: 'B-Xtrender', fontSize: 14, horzAlign: 'left', vertAlign: 'top' },
+    watermark: { visible: true, color: 'rgba(120,123,134,0.25)', text: 'IQ Oscillator', fontSize: 14, horzAlign: 'left', vertAlign: 'top' },
   });
 
   const shortHist = bxtChart.addHistogramSeries({
@@ -1389,14 +1419,14 @@ const barsBaseUrl = () => timeframe === 'daily' ? 'bars' : `bars_${timeframe}`;
 function renderChanges(changes) {
   if (!changes) return '<p class="empty">No prior run to compare to.</p>';
   const buckets = [
-    {label: 'THT FVB · GREEN · New',     items: changes.fvb_green_added,   action: 'added',   color: 'green'},
-    {label: 'THT FVB · GREEN · Dropped', items: changes.fvb_green_removed, action: 'removed', color: 'green'},
-    {label: 'THT FVB · RED · New',       items: changes.fvb_red_added,     action: 'added',   color: 'red'},
-    {label: 'THT FVB · RED · Dropped',   items: changes.fvb_red_removed,   action: 'removed', color: 'red'},
-    {label: 'B-Xtrender · GREEN · New',     items: changes.bxt_green_added,   action: 'added',   color: 'green'},
-    {label: 'B-Xtrender · GREEN · Dropped', items: changes.bxt_green_removed, action: 'removed', color: 'green'},
-    {label: 'B-Xtrender · RED · New',       items: changes.bxt_red_added,     action: 'added',   color: 'red'},
-    {label: 'B-Xtrender · RED · Dropped',   items: changes.bxt_red_removed,   action: 'removed', color: 'red'},
+    {label: 'THT Bands · GREEN · New',     items: changes.fvb_green_added,   action: 'added',   color: 'green'},
+    {label: 'THT Bands · GREEN · Dropped', items: changes.fvb_green_removed, action: 'removed', color: 'green'},
+    {label: 'THT Bands · RED · New',       items: changes.fvb_red_added,     action: 'added',   color: 'red'},
+    {label: 'THT Bands · RED · Dropped',   items: changes.fvb_red_removed,   action: 'removed', color: 'red'},
+    {label: 'IQ Oscillator · GREEN · New',     items: changes.bxt_green_added,   action: 'added',   color: 'green'},
+    {label: 'IQ Oscillator · GREEN · Dropped', items: changes.bxt_green_removed, action: 'removed', color: 'green'},
+    {label: 'IQ Oscillator · RED · New',       items: changes.bxt_red_added,     action: 'added',   color: 'red'},
+    {label: 'IQ Oscillator · RED · Dropped',   items: changes.bxt_red_removed,   action: 'removed', color: 'red'},
   ];
   const total = buckets.reduce((s,b) => s + (b.items?.length || 0), 0);
   if (total === 0) return '<p class="empty">No changes since last refresh.</p>';
