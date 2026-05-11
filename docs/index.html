@@ -1419,14 +1419,14 @@ const barsBaseUrl = () => timeframe === 'daily' ? 'bars' : `bars_${timeframe}`;
 function renderChanges(changes) {
   if (!changes) return '<p class="empty">No prior run to compare to.</p>';
   const buckets = [
-    {label: 'IQ Bands · G',     items: changes.fvb_green_added,   action: 'added',   color: 'green'},
-    {label: 'IQ Bands · G',     items: changes.fvb_green_removed, action: 'removed', color: 'green'},
-    {label: 'IQ Bands · R',     items: changes.fvb_red_added,     action: 'added',   color: 'red'},
-    {label: 'IQ Bands · R',     items: changes.fvb_red_removed,   action: 'removed', color: 'red'},
-    {label: 'IQ Osc · G',       items: changes.bxt_green_added,   action: 'added',   color: 'green'},
-    {label: 'IQ Osc · G',       items: changes.bxt_green_removed, action: 'removed', color: 'green'},
-    {label: 'IQ Osc · R',       items: changes.bxt_red_added,     action: 'added',   color: 'red'},
-    {label: 'IQ Osc · R',       items: changes.bxt_red_removed,   action: 'removed', color: 'red'},
+    {label: 'Bands ▲ New',     items: changes.fvb_green_added,   action: 'added',   color: 'green'},
+    {label: 'Bands ▲ Drop',    items: changes.fvb_green_removed, action: 'removed', color: 'green'},
+    {label: 'Bands ▼ New',     items: changes.fvb_red_added,     action: 'added',   color: 'red'},
+    {label: 'Bands ▼ Drop',    items: changes.fvb_red_removed,   action: 'removed', color: 'red'},
+    {label: 'Osc ▲ New',       items: changes.bxt_green_added,   action: 'added',   color: 'green'},
+    {label: 'Osc ▲ Drop',      items: changes.bxt_green_removed, action: 'removed', color: 'green'},
+    {label: 'Osc ▼ New',       items: changes.bxt_red_added,     action: 'added',   color: 'red'},
+    {label: 'Osc ▼ Drop',      items: changes.bxt_red_removed,   action: 'removed', color: 'red'},
   ];
   const total = buckets.reduce((s,b) => s + (b.items?.length || 0), 0);
   if (total === 0) return '<p class="empty">No changes since last refresh.</p>';
@@ -1448,7 +1448,7 @@ function renderChanges(changes) {
   const num = v => v == null ? '<span class="unit">—</span>' : v.toFixed(2);
   const body = buckets.flatMap(b =>
     (b.items || []).map(item => `<tr class="row-clickable" data-sym="${item.sym}">
-      <td class="col-flip"><span class="badge badge-${b.color} badge-${b.action}">${b.label} · ${b.action.toUpperCase()}</span></td>
+      <td class="col-flip"><span class="badge badge-${b.color} badge-${b.action}" style="white-space:nowrap;">${b.label}</span></td>
       <td class="col-name">${item.name}</td>
       <td><strong>${item.sym}</strong></td>
       <td class="num col-mcap">${fmtMcap(item.mcap)}</td>
