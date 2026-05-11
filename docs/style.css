@@ -991,6 +991,9 @@ button { font-family: inherit; cursor: pointer; }
 .table-wrap thead th.sorted { color: var(--foreground); }
 .sort-arrow { color: var(--muted-foreground); margin-left: 4px; opacity: 0.4; }
 .sort-arrow.active { color: var(--foreground); opacity: 1; }
+.table-wrap table.t-compact { font-size: 11px; }
+.table-wrap table.t-compact th, .table-wrap table.t-compact td { padding: 6px 6px; }
+.table-wrap table.t-compact .col-name-compact { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .table-wrap tbody td {
   padding: 8px 10px;
