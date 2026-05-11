@@ -1419,37 +1419,36 @@ const barsBaseUrl = () => timeframe === 'daily' ? 'bars' : `bars_${timeframe}`;
 function renderChanges(changes) {
   if (!changes) return '<p class="empty">No prior run to compare to.</p>';
   const buckets = [
-    {label: 'THT Bands · GREEN · New',     items: changes.fvb_green_added,   action: 'added',   color: 'green'},
-    {label: 'THT Bands · GREEN · Dropped', items: changes.fvb_green_removed, action: 'removed', color: 'green'},
-    {label: 'THT Bands · RED · New',       items: changes.fvb_red_added,     action: 'added',   color: 'red'},
-    {label: 'THT Bands · RED · Dropped',   items: changes.fvb_red_removed,   action: 'removed', color: 'red'},
-    {label: 'IQ Oscillator · GREEN · New',     items: changes.bxt_green_added,   action: 'added',   color: 'green'},
-    {label: 'IQ Oscillator · GREEN · Dropped', items: changes.bxt_green_removed, action: 'removed', color: 'green'},
-    {label: 'IQ Oscillator · RED · New',       items: changes.bxt_red_added,     action: 'added',   color: 'red'},
-    {label: 'IQ Oscillator · RED · Dropped',   items: changes.bxt_red_removed,   action: 'removed', color: 'red'},
+    {label: 'IQ Bands · G',     items: changes.fvb_green_added,   action: 'added',   color: 'green'},
+    {label: 'IQ Bands · G',     items: changes.fvb_green_removed, action: 'removed', color: 'green'},
+    {label: 'IQ Bands · R',     items: changes.fvb_red_added,     action: 'added',   color: 'red'},
+    {label: 'IQ Bands · R',     items: changes.fvb_red_removed,   action: 'removed', color: 'red'},
+    {label: 'IQ Osc · G',       items: changes.bxt_green_added,   action: 'added',   color: 'green'},
+    {label: 'IQ Osc · G',       items: changes.bxt_green_removed, action: 'removed', color: 'green'},
+    {label: 'IQ Osc · R',       items: changes.bxt_red_added,     action: 'added',   color: 'red'},
+    {label: 'IQ Osc · R',       items: changes.bxt_red_removed,   action: 'removed', color: 'red'},
   ];
   const total = buckets.reduce((s,b) => s + (b.items?.length || 0), 0);
   if (total === 0) return '<p class="empty">No changes since last refresh.</p>';
   const head = `<table>
     <thead><tr>
-      <th>Bucket</th><th>Action</th>
+      <th>Flip</th>
       <th>Company</th><th>Sym</th>
-      <th class="num">Mkt Cap</th>
+      <th class="num">Cap</th>
       <th class="num">Price</th>
       <th class="num">Basis</th>
-      <th class="num">BXT</th>
+      <th class="num">Osc</th>
       <th class="num">ATH</th>
-      <th class="num">% to ATH</th>
-      <th class="num">52w High</th>
-      <th class="num">52w Low</th>
-      <th class="num">New ATHs 30d</th>
+      <th class="num">%ATH</th>
+      <th class="num">52wH</th>
+      <th class="num">52wL</th>
+      <th class="num">ATHs 30d</th>
     </tr></thead><tbody>`;
   const usd = v => v == null ? '<span class="unit">—</span>' : `<span class="unit">$</span>${v.toFixed(2)}`;
   const num = v => v == null ? '<span class="unit">—</span>' : v.toFixed(2);
   const body = buckets.flatMap(b =>
     (b.items || []).map(item => `<tr class="row-clickable" data-sym="${item.sym}">
-      <td class="col-bucket">${b.label}</td>
-      <td><span class="badge badge-${b.color} badge-${b.action}">${b.action}</span></td>
+      <td class="col-flip"><span class="badge badge-${b.color} badge-${b.action}">${b.label} · ${b.action.toUpperCase()}</span></td>
       <td class="col-name">${item.name}</td>
       <td><strong>${item.sym}</strong></td>
       <td class="num col-mcap">${fmtMcap(item.mcap)}</td>
